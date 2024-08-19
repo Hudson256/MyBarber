@@ -60,8 +60,7 @@ interface GetTimeListProps {
 
 const getTimeList = ({ bookings, selectedDay }: GetTimeListProps) => {
   return TIME_LIST.filter((time) => {
-    const hour = Number(time.split(":")[0])
-    const minutes = Number(time.split(":")[1])
+    const [hour, minutes] = time.split(":").map(Number)
 
     const timeIsOnThePast = isPast(set(new Date(), { hours: hour, minutes }))
     if (timeIsOnThePast && isToday(selectedDay)) {
@@ -106,16 +105,17 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const selectedDate = useMemo(() => {
     if (!selectedDay || !selectedTime) return
     return set(selectedDay, {
-      hours: Number(selectedTime?.split(":")[0]),
-      minutes: Number(selectedTime?.split(":")[1]),
+      hours: Number(selectedTime.split(":")[0]),
+      minutes: Number(selectedTime.split(":")[1]),
     })
   }, [selectedDay, selectedTime])
 
   const handleBookingClick = () => {
     if (data?.user) {
-      return setBookingSheetIsOpen(true)
+      setBookingSheetIsOpen(true)
+    } else {
+      setSignInDialogIsOpen(true)
     }
-    return setSignInDialogIsOpen(true)
   }
 
   const handleBookingSheetOpenChange = () => {
@@ -164,9 +164,9 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   return (
     <>
       <Card>
-        <CardContent className="flex items-center gap-3 p-3">
+        <CardContent className="flex items-center gap-4 p-4">
           {/* IMAGE */}
-          <div className="relative max-h-[110px] min-h-[110px] min-w-[110px] max-w-[110px]">
+          <div className="relative h-[110px] w-[110px]">
             <Image
               alt={service.name}
               src={service.imageUrl}
@@ -175,9 +175,9 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
             />
           </div>
           {/* DIREITA */}
-          <div className="space-y-2">
+          <div className="flex-1 space-y-2">
             <h3 className="text-sm font-semibold">{service.name}</h3>
-            <p className="text-sm text-gray-400">{service.description}</p>
+            <p className="text-sm text-gray-500">{service.description}</p>
             {/* PREÇO E BOTÃO */}
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-primary">
@@ -199,23 +199,46 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="min-w-16vw flex min-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
+                <SheetContent className="px-0">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
 
-                  <div className="border-b border-solid py-5">
+                  <div className="border-b border-gray-200 py-5">
                     <Calendar
                       mode="single"
                       locale={ptBR}
                       selected={selectedDay}
                       onSelect={handleDateSelect}
                       fromDate={new Date()}
+                      styles={{
+                        head_cell: {
+                          width: "100%",
+                          textTransform: "capitalize",
+                        },
+                        cell: {
+                          width: "100%",
+                        },
+                        button: {
+                          width: "100%",
+                        },
+                        nav_button_previous: {
+                          width: "32px",
+                          height: "32px",
+                        },
+                        nav_button_next: {
+                          width: "32px",
+                          height: "32px",
+                        },
+                        caption: {
+                          textTransform: "capitalize",
+                        },
+                      }}
                     />
                   </div>
 
                   {selectedDay && (
-                    <div className="min-h-auto flex flex-wrap justify-evenly gap-2 border-b border-solid p-5">
+                    <div className="flex gap-3 overflow-x-auto border-b border-gray-200 p-5 [&::-webkit-scrollbar]:hidden">
                       {timeList.length > 0 ? (
                         timeList.map((time) => (
                           <Button
@@ -230,7 +253,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                           </Button>
                         ))
                       ) : (
-                        <p className="text-xs">
+                        <p className="text-xs text-gray-500">
                           Não há horários disponíveis para este dia.
                         </p>
                       )}
@@ -265,7 +288,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         open={signInDialogIsOpen}
         onOpenChange={(open) => setSignInDialogIsOpen(open)}
       >
-        <DialogContent className="w-[90%]">
+        <DialogContent className="w-[90%] max-w-[400px]">
           <SignInDialog />
         </DialogContent>
       </Dialog>

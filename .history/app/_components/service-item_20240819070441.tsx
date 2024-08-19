@@ -199,12 +199,12 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="min-w-16vw flex min-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
+                <SheetContent className="max-w-16vw flex max-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
 
-                  <div className="border-b border-solid py-5">
+                  <div className="overflow-x-visible border-b border-solid py-5">
                     <Calendar
                       mode="single"
                       locale={ptBR}
@@ -215,7 +215,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   </div>
 
                   {selectedDay && (
-                    <div className="min-h-auto flex flex-wrap justify-evenly gap-2 border-b border-solid p-5">
+                    <div className="flex min-h-[50px] items-center gap-3 overflow-y-hidden border-b border-solid p-5 [&::-webkit-scrollbar]:hidden">
                       {timeList.length > 0 ? (
                         timeList.map((time) => (
                           <Button

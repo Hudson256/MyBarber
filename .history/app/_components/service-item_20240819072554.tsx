@@ -199,7 +199,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="min-w-16vw flex min-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
+                <SheetContent className="min-w-16vw flex max-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
@@ -215,7 +215,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   </div>
 
                   {selectedDay && (
-                    <div className="min-h-auto flex flex-wrap justify-evenly gap-2 border-b border-solid p-5">
+                    <div className="min-h-[40vh] flex-col items-center gap-3 overflow-auto border-b border-solid p-5">
                       {timeList.length > 0 ? (
                         timeList.map((time) => (
                           <Button
