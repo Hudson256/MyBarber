@@ -1,0 +1,6 @@
+[33maa54481[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m Merge branch 'master' of https://github.com/Hudson256/MyBarber
+[33m8916e86[m fix(booking): improve time visibility, responsiveness, and overflow issue
+[33mfef2c16[m[33m ([m[1;31morigin/master[m[33m)[m fix(auth): adjust Google login functionality
+[33m08ad041[m fix: add .env to .gitignore
+[33mf360e95[m fix(auth): adjust Google login functionality
+[33m7c4ec26[m Initial commit from Create Next App
