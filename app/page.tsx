@@ -70,12 +70,12 @@ const Home = async () => {
         </div>
 
         {/* IMAGEM */}
-        <div className="relative mt-6 h-[150px] w-full">
+        <div className="relative mt-6 h-[150px] w-full md:h-[300px] lg:h-[300px]">
           <Image
             alt="Agende nos melhores com FSW Barber"
             src="/banner-01.png"
             fill
-            className="rounded-xl object-cover"
+            className="rounded-xl object-cover md:object-fill lg:object-fill"
           />
         </div>
 
@@ -100,7 +100,7 @@ const Home = async () => {
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
           Recomendados
         </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-4 overflow-x-scroll">
           {barbershops.map((barbershop) => (
             <BarbershopItem key={barbershop.id} barbershop={barbershop} />
           ))}
@@ -109,7 +109,7 @@ const Home = async () => {
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
           Populares
         </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-4 overflow-x-scroll">
           {popularBarbershops.map((barbershop) => (
             <BarbershopItem key={barbershop.id} barbershop={barbershop} />
           ))}

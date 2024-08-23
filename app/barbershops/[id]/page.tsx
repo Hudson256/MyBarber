@@ -32,15 +32,28 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
     return notFound()
   }
 
+  // Calcular a média das avaliações
+  const calculateAverageRating = () => {
+    if (barbershop.ratings.length === 0) return 0
+    const totalRating = barbershop.ratings.reduce(
+      (sum, rating) => sum + rating.rating,
+      0,
+    )
+    return (totalRating / barbershop.ratings.length).toFixed(1) // Mantém uma casa decimal
+  }
+
+  // Obter o número total de avaliações
+  const totalRatings = barbershop.ratings.length
+
   return (
     <div>
       {/* IMAGEM */}
-      <div className="relative h-[250px] w-full">
+      <div className="relative h-[250px] w-full lg:min-h-96">
         <Image
           alt={barbershop.name}
-          src={barbershop?.imageUrl}
+          src={barbershop?.imageUrl || "/default-image.png"} // Caminho padrão para imagem
           fill
-          className="object-cover"
+          className="object-cover lg:object-fill"
         />
 
         <Button
@@ -69,17 +82,23 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
       </div>
 
       {/* TÍTULO */}
-      <div className="border-b border-solid p-5">
-        <h1 className="mb-3 text-xl font-bold">{barbershop.name}</h1>
-        <div className="mb-2 flex items-center gap-2">
-          <MapPinIcon className="text-primary" size={18} />
-          <p className="text-sm">{barbershop?.address}</p>
-        </div>
+      <div className="flex justify-between border-b border-solid p-5">
+        <div className="flex flex-col">
+          <h1 className="mb-3 text-xl font-bold">{barbershop.name}</h1>
+          <div className="mb-2 flex items-center gap-2">
+            <MapPinIcon className="text-primary" size={18} />
+            <p className="text-sm">{barbershop?.address}</p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <StarIcon className="fill-primary text-primary" size={18} />
-          <p className="text-sm">5,0 (499 avaliações)</p>
+          <div className="flex items-center gap-2">
+            <StarIcon className="fill-primary text-primary" size={18} />
+            <p className="text-sm">
+              {calculateAverageRating()} ({totalRatings} avaliações)
+            </p>
+          </div>
         </div>
+        {/* BOTÃO DE AVALIAÇÃO */}
+        <RatingClientSide barbershop={barbershop} />
       </div>
 
       {/* DESCRIÇÃO */}
@@ -108,9 +127,6 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
           <PhoneItem key={phone} phone={phone} />
         ))}
       </div>
-
-      {/* BOTÃO DE AVALIAÇÃO */}
-      <RatingClientSide barbershop={barbershop} />
 
       {/* EXIBIÇÃO DE AVALIAÇÕES */}
       <RatingDisplay

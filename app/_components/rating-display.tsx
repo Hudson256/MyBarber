@@ -5,15 +5,15 @@ import { BarbershopService } from "@prisma/client"
 
 interface Rating {
   userName: string
-  userAvatar: string | null // Adicionado null para o caso de não ter avatar
+  userAvatar: string | null
   serviceId: string
   rating: number
-  message: string | null // Tornado opcional
+  message: string | null
 }
 
 interface RatingDisplayProps {
-  ratings: Rating[] // Aceitando um array de avaliações
-  services: BarbershopService[] // Aceitando um array de serviços
+  ratings: Rating[]
+  services: BarbershopService[]
 }
 
 const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
@@ -34,8 +34,25 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
     return stars
   }
 
+  // Calcular a média das avaliações
+  const calculateAverageRating = () => {
+    if (ratings.length === 0) return 0
+    const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0)
+    return (totalRating / ratings.length).toFixed(1) // Mantém uma casa decimal
+  }
+
+  // Obter o número total de avaliações
+  const totalRatings = ratings.length
+
   return (
     <div className="space-y-4 p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <StarIcon className="fill-primary text-primary" size={24} />
+        <p className="text-xl font-bold">
+          {calculateAverageRating()} ({totalRatings} avaliações)
+        </p>
+      </div>
+
       {ratings.map((rating) => {
         const service = findService(rating.serviceId)
 
@@ -46,7 +63,7 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
           >
             <div className="mr-4 flex-shrink-0">
               <img
-                src={rating.userAvatar || "./ui/avatar.svg"} // Caminho corrigido
+                src={rating.userAvatar || "/default-avatar.png"} // Caminho corrigido
                 alt={`${rating.userName}'s avatar`}
                 className="h-12 w-12 rounded-full object-cover"
                 width={48}
