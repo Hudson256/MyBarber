@@ -9,7 +9,6 @@ import { getConcludedBookings } from "../_data/get-concluded-bookings"
 const Bookings = async () => {
   const session = await getServerSession(authOptions)
   if (!session?.user) {
-    // TODO: mostrar pop-up de login
     return notFound()
   }
   const confirmedBookings = await getConfirmedBookings()

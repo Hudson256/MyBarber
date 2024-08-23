@@ -8,6 +8,8 @@ import { ChevronLeftIcon, MapPinIcon, MenuIcon, StarIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import RatingClientSide from "../../_components/rating-client-side"
+import RatingDisplay from "@/app/_components/rating-display"
 
 interface BarbershopPageProps {
   params: {
@@ -16,13 +18,13 @@ interface BarbershopPageProps {
 }
 
 const BarbershopPage = async ({ params }: BarbershopPageProps) => {
-  // chamar o meu banco de dados
   const barbershop = await db.barbershop.findUnique({
     where: {
       id: params.id,
     },
     include: {
       services: true,
+      ratings: true, // Inclua as avaliações
     },
   })
 
@@ -106,6 +108,15 @@ const BarbershopPage = async ({ params }: BarbershopPageProps) => {
           <PhoneItem key={phone} phone={phone} />
         ))}
       </div>
+
+      {/* BOTÃO DE AVALIAÇÃO */}
+      <RatingClientSide barbershop={barbershop} />
+
+      {/* EXIBIÇÃO DE AVALIAÇÕES */}
+      <RatingDisplay
+        ratings={barbershop.ratings}
+        services={barbershop.services}
+      />
     </div>
   )
 }
