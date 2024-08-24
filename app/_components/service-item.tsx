@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation"
 
 interface ServiceItemProps {
   service: BarbershopService
-  barbershop: Pick<Barbershop, "name">
+  barbershop: Pick<Barbershop, "id" | "name"> //
 }
 
 const TIME_LIST = [
@@ -137,6 +137,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     try {
       if (!selectedDate) return
       await createBooking({
+        barbershopId: barbershop.id, // Adiciona o barbershopId aqui
         serviceId: service.id,
         date: selectedDate,
       })

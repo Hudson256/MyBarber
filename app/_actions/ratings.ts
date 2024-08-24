@@ -13,10 +13,12 @@ interface CreateRatingParams {
 }
 
 export const createRating = async (params: CreateRatingParams) => {
-  const user = await getServerSession(authOptions)
-  if (!user) {
+  const session = await getServerSession(authOptions)
+  if (!session || !session.user) {
     throw new Error("Usuário não autenticado")
   }
+
+  const userName = (session.user as any).name || "Anonymous" // Ajuste conforme necessário
 
   await db.rating.create({
     data: {
@@ -24,6 +26,7 @@ export const createRating = async (params: CreateRatingParams) => {
       serviceId: params.serviceId,
       rating: params.rating,
       message: params.message,
+      userName: userName, // Inclua o userName
     },
   })
 

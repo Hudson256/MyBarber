@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String            @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String            @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  barbershops   BarbershopUser[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model Account {
@@ -70,6 +71,18 @@ model Barbershop {
   updatedAt   DateTime            @updatedAt
   services    BarbershopService[]
   ratings     Rating[]
+  users       BarbershopUser[]
+  bookings    Booking[]
+}
+
+model BarbershopUser {
+  id           String     @id @default(uuid())
+  userId       String
+  barbershopId String
+  user         User       @relation(fields: [userId], references: [id])
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+
+  @@unique([userId, barbershopId])
 }
 
 model BarbershopService {
@@ -85,16 +98,17 @@ model BarbershopService {
 }
 
 model Booking {
-  id        String            @id @default(uuid())
-  userId    String
-  user      User              @relation(fields: [userId], references: [id])
-  serviceId String
-  service   BarbershopService @relation(fields: [serviceId], references: [id])
-  date      DateTime
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  serviceId     String
+  service       BarbershopService @relation(fields: [serviceId], references: [id])
+  barbershopId  String
+  barbershop    Barbershop        @relation(fields: [barbershopId], references: [id])
+  date          DateTime
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
-
 
 model Rating {
   id                Int               @id @default(autoincrement())
@@ -107,5 +121,5 @@ model Rating {
   userName          String
   userAvatar        String?
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime @updatedAt
+  updatedAt         DateTime          @updatedAt
 }
