@@ -1,34 +1,48 @@
-# Getting Started
+# MyBarber
 
-First, run the development server:
+## Overview
+
+**MyBarber** é uma plataforma web moderna desenvolvida para barbearias, permitindo que estas gerenciem seus horários, vejam agendamentos e interajam com seus clientes de maneira eficiente. O projeto foi desenvolvido utilizando tecnologias de ponta, proporcionando uma experiência rápida, responsiva e segura tanto para barbearias quanto para clientes.
+
+## Funcionalidades Principais
+
+- **Gerenciamento de Horários**: Barbearias podem adicionar, editar e excluir horários disponíveis para reservas.
+- **Sistema de Avaliações**: Clientes podem avaliar os serviços prestados com um sistema de estrelas (1-5) e deixar comentários.
+- **Autenticação Segura**: Implementação de OAuth com Google, garantindo segurança e facilidade de login para os usuários.
+- **Interface Intuitiva**: Desenvolvido com React e Next.js, a interface é responsiva e fácil de navegar, oferecendo uma experiência de usuário otimizada.
+- **Backend Robusto**: Utiliza Node.js com Prisma e PostgreSQL para uma gestão eficiente dos dados e alta performance.
+- **Dockerizado**: O projeto é totalmente dockerizado, facilitando o deploy em qualquer ambiente.
+
+## Tecnologias Utilizadas
+
+- **Frontend**:
+  - React
+  - Next.js
+  - Tailwind CSS
+- **Backend**:
+  - Node.js
+  - Prisma ORM
+  - PostgreSQL
+- **Autenticação**:
+  - NextAuth com OAuth via Google
+- **Infraestrutura**:
+  - Docker
+- **Outros**:
+  - TypeScript para tipagem estática
+  - ESLint e Prettier para garantir qualidade de código
+  - Lucide-react e Sonner para ícones e notificações
+
+## Estrutura do Projeto
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+MyBarber/
+├── api/                     # Endpoints da API
+├── components/              # Componentes React reutilizáveis
+├── constants/               # Constantes usadas no projeto
+├── data/                    # Scripts para lidar com dados
+├── pages/                   # Páginas da aplicação Next.js
+│   └── manage-barbershop/   # Página de gerenciamento de barbearias
+├── public/                  # Arquivos estáticos
+├── styles/                  # Arquivos de estilo
+├── utils/                   # Funções utilitárias
+└── docker-compose.yml       # Configuração do Docker
