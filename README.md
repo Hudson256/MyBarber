@@ -59,5 +59,44 @@ MyBarber/
 1. Clone o repositório:
 
    ```bash
-   git clone https://github.com/seuusuario/MyBarber.git
-   cd MyBarber
+   git clone https://github.com/Hudson256/MyBarber.git
+   cd MyBarber```
+2. Instale as dependências:
+
+```bash
+yarn install
+# ou
+npm install
+```
+3. Configure as variáveis de ambiente no arquivo .env.
+
+4. Inicie o Docker:
+
+```bash
+docker-compose up -d
+```
+5.Rode as migrações do Prisma:
+```bash
+npx prisma migrate deploy
+```
+6.Inicie o servidor de desenvolvimento:
+```bash
+yarn dev
+# ou
+npm run dev
+```
+##Testes
+O projeto inclui uma suíte de testes para garantir a estabilidade e a qualidade do código. Para rodar os testes, utilize o comando:
+```bash
+yarn test
+# ou
+npm run test
+```
+##Contribuições
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. Este projeto segue o padrão de código estabelecido por ESLint e Prettier, então certifique-se de rodar o linter antes de submeter suas alterações.
+
+##Licença
+Este projeto é licenciado sob a licença MIT.
+
+##Contato
+Se você tiver alguma dúvida ou sugestão, entre em contato pelo e-mail: hudsono256@gmail.com.
