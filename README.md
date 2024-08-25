@@ -68,7 +68,7 @@ yarn install
 # ou
 npm install
 ```
-3. Configure as variáveis de ambiente no arquivo .env.
+3. Configure as variáveis de ambiente no arquivo .env, utilizando o exemplo fornecido em .env.example
 
 4. Inicie o Docker:
 
