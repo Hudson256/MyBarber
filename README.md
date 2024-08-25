@@ -47,7 +47,7 @@ MyBarber/
 ├── utils/                   # Funções utilitárias
 └── docker-compose.yml       # Configuração do Docker
 ```
-
+## Como Rodar o Projeto
 ## Requisitos
 
 - Node.js
