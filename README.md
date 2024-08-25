@@ -46,3 +46,18 @@ MyBarber/
 ├── styles/                  # Arquivos de estilo
 ├── utils/                   # Funções utilitárias
 └── docker-compose.yml       # Configuração do Docker
+```
+
+## Requisitos
+
+- Node.js
+- Docker
+- Yarn ou NPM
+
+## Instalação
+
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/seuusuario/MyBarber.git
+   cd MyBarber
