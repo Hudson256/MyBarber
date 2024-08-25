@@ -85,18 +85,18 @@ yarn dev
 # ou
 npm run dev
 ```
-##Testes
+## Testes
 O projeto inclui uma suíte de testes para garantir a estabilidade e a qualidade do código. Para rodar os testes, utilize o comando:
 ```bash
 yarn test
 # ou
 npm run test
 ```
-##Contribuições
+## Contribuições
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. Este projeto segue o padrão de código estabelecido por ESLint e Prettier, então certifique-se de rodar o linter antes de submeter suas alterações.
 
-##Licença
+## Licença
 Este projeto é licenciado sob a licença MIT.
 
-##Contato
+## Contato
 Se você tiver alguma dúvida ou sugestão, entre em contato pelo e-mail: hudsono256@gmail.com.
