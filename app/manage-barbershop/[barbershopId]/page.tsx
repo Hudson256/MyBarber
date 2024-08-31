@@ -12,108 +12,169 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
-} from "./../../_components/ui/dialog"
-
-interface Time {
-  id: string
-  date: Date
-  createdAt: Date
-  updatedAt: Date
-}
+} from "../../_components/ui/dialog"
+import { toast } from "sonner"
+import { ptBR } from "date-fns/locale"
+import { getAllBarbershopTimes } from "../../_actions/get-all-barbershop-times"
 
 export default function ManageBarbershop() {
   const { data: session } = useSession()
   const router = useRouter()
   const { barbershopId } = useParams()
-  const [times, setTimes] = useState<Time[]>([])
-  const [newDate, setNewDate] = useState<Date | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [newTime, setNewTime] = useState<string>("")
+  const [allTimes, setAllTimes] = useState<string[]>([])
+  const [availableTimes, setAvailableTimes] = useState<string[]>([])
 
   useEffect(() => {
-    // Check session status and redirect if not logged in
     if (!session) {
       router.push("/login")
       return
     }
 
-    // Fetch barbershop times if the session is valid and barbershopId is available
-    if (typeof barbershopId === "string") {
+    if (typeof barbershopId === "string" && selectedDate) {
       const fetchTimes = async () => {
-        const barbershopTimes = await getBarbershopTimes({
-          barbershopId,
-        })
-        setTimes(barbershopTimes)
+        try {
+          const barbershopTimes = await getBarbershopTimes({
+            barbershopId,
+            date: selectedDate,
+          })
+          setAvailableTimes(barbershopTimes)
+
+          // Buscar todos os horários possíveis para esta barbearia
+          const allBarbershopTimes = await getAllBarbershopTimes(barbershopId)
+          setAllTimes(allBarbershopTimes)
+        } catch (error) {
+          console.error("Erro ao buscar horários:", error)
+          toast.error("Erro ao carregar horários. Tente novamente.")
+        }
       }
 
       fetchTimes()
     }
-  }, [session, barbershopId, router])
+  }, [session, barbershopId, router, selectedDate])
 
-  // Handle adding new times
-  const handleAddTime = async (dates: Date[] | undefined) => {
-    if (dates && typeof barbershopId === "string") {
-      for (const date of dates) {
+  const handleAddTime = async (time: string) => {
+    if (selectedDate && typeof barbershopId === "string") {
+      try {
         await addBarbershopTime({
           barbershopId,
-          time: date.toISOString(),
+          dayOfWeek: selectedDate.getDay(),
+          time,
         })
+        const updatedTimes = await getBarbershopTimes({
+          barbershopId,
+          date: selectedDate,
+        })
+        setAvailableTimes(updatedTimes)
+        toast.success("Horário adicionado com sucesso!")
+      } catch (error) {
+        console.error("Erro ao adicionar horário:", error)
+        toast.error("Erro ao adicionar horário. Tente novamente.")
       }
-      const updatedTimes = await getBarbershopTimes({ barbershopId })
-      setTimes(updatedTimes)
     }
   }
 
-  // Handle removing a specific time
-  const handleRemoveTime = async (id: string) => {
-    if (typeof barbershopId === "string") {
-      await removeBarbershopTime({ bookingId: id })
-      const updatedTimes = await getBarbershopTimes({ barbershopId })
-      setTimes(updatedTimes)
+  const handleRemoveTime = async (time: string) => {
+    if (typeof barbershopId === "string" && selectedDate) {
+      try {
+        await removeBarbershopTime({
+          barbershopId,
+          dayOfWeek: selectedDate.getDay(),
+          time,
+        })
+        const updatedTimes = await getBarbershopTimes({
+          barbershopId,
+          date: selectedDate,
+        })
+        setAvailableTimes(updatedTimes)
+        toast.success("Horário removido com sucesso!")
+      } catch (error) {
+        console.error("Erro ao remover horário:", error)
+        toast.error("Erro ao remover horário. Tente novamente.")
+      }
     }
   }
 
-  // Handle date input change
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewDate(new Date(event.target.value))
-  }
-
-  // Handle submitting a new date
-  const handleSubmitDate = async () => {
-    if (newDate && typeof barbershopId === "string") {
-      await handleAddTime([newDate])
-      setNewDate(null)
+  const handleNewTimeAdd = async () => {
+    if (newTime) {
+      await handleAddTime(newTime)
+      setNewTime("")
     }
   }
 
   return (
-    <div>
-      <h1>Gerenciar Horários</h1>
-      <Calendar mode="multiple" onSelect={(dates) => handleAddTime(dates)} />
+    <div className="p-5">
+      <h1 className="mb-4 text-2xl font-bold">Gerenciar Horários</h1>
+      <Calendar
+        mode="single"
+        selected={selectedDate}
+        onSelect={setSelectedDate}
+        className="mb-4"
+        locale={ptBR}
+      />
 
-      <ul>
-        {times.map((time) => (
-          <li key={time.id}>
-            <p>{new Date(time.date).toLocaleString()}</p>
-            <Button onClick={() => handleRemoveTime(time.id)}>Remover</Button>
-          </li>
-        ))}
-      </ul>
+      {selectedDate && (
+        <div>
+          <h2 className="mb-2 text-xl">
+            Horários para {selectedDate.toLocaleDateString("pt-BR")} (
+            {
+              [
+                "Domingo",
+                "Segunda",
+                "Terça",
+                "Quarta",
+                "Quinta",
+                "Sexta",
+                "Sábado",
+              ][selectedDate.getDay()]
+            }
+            )
+          </h2>
+          <ul className="mb-4 space-y-2">
+            {allTimes.map((time) => (
+              <li key={time} className="flex items-center justify-between">
+                <span>{time}</span>
+                {availableTimes.includes(time) ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRemoveTime(time)}
+                  >
+                    Remover
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddTime(time)}
+                  >
+                    Adicionar
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button size="icon">Adicionar Horário</Button>
-        </DialogTrigger>
-        <DialogContent className="w-[90%]">
-          <h2 className="text-lg font-semibold">Adicionar Novo Horário</h2>
-          <input
-            type="datetime-local"
-            onChange={handleDateChange}
-            className="mt-2 w-full rounded border p-2"
-          />
-          <Button onClick={handleSubmitDate} className="mt-4">
-            Adicionar
-          </Button>
-        </DialogContent>
-      </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Adicionar Novo Horário</Button>
+            </DialogTrigger>
+            <DialogContent className="w-[90%]">
+              <h2 className="mb-4 text-lg font-semibold">
+                Adicionar Novo Horário
+              </h2>
+              <input
+                type="time"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+                className="mb-4 w-full rounded border p-2"
+              />
+              <Button onClick={handleNewTimeAdd}>Adicionar</Button>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
     </div>
   )
 }

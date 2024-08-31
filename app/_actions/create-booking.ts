@@ -1,39 +1,45 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { db } from "../_lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { revalidatePath } from "next/cache"
 
 interface CreateBookingParams {
-  serviceId: string
-  date: Date
   barbershopId: string
-}
-
-// Definindo o tipo de usuário com ID
-interface User {
-  id: string
-  name?: string
-  email?: string
-  image?: string
+  serviceId: string
+  userId: string
+  date: Date
 }
 
 export const createBooking = async (params: CreateBookingParams) => {
-  const session = await getServerSession(authOptions)
+  const { barbershopId, serviceId, userId, date } = params
 
-  // Assegure que o tipo de usuário é o esperado
-  if (!session || !session.user || !(session.user as User).id) {
-    throw new Error("Usuário não autenticado")
+  const dayOfWeek = date.getDay()
+  const time = date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+
+  const availability = await db.barbershopAvailability.findFirst({
+    where: {
+      barbershopId,
+      dayOfWeek,
+      time,
+    },
+  })
+
+  if (!availability) {
+    throw new Error("Horário não disponível")
   }
 
   await db.booking.create({
     data: {
-      ...params,
-      userId: (session.user as User).id,
+      serviceId,
+      userId,
+      date,
+      barbershopId,
     },
   })
 
-  revalidatePath("/barbershops/[id]")
+  revalidatePath("/")
   revalidatePath("/bookings")
 }

@@ -3,20 +3,20 @@ import { db } from "./../_lib/prisma"
 
 interface AddBarbershopTimeProps {
   barbershopId: string
+  dayOfWeek: number
   time: string
 }
 
 export async function addBarbershopTime({
   barbershopId,
+  dayOfWeek,
   time,
 }: AddBarbershopTimeProps) {
-  // Lógica para adicionar horário
-  await db.booking.create({
+  await db.barbershopAvailability.create({
     data: {
       barbershopId,
-      date: new Date(time),
-      serviceId: "service_id", // Passe o ID do serviço correspondente
-      userId: "user_id", // Passe o ID do usuário que está criando o horário
+      dayOfWeek,
+      time,
     },
   })
 }

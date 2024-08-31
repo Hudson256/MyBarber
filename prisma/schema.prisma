@@ -73,6 +73,8 @@ model Barbershop {
   ratings     Rating[]
   users       BarbershopUser[]
   bookings    Booking[]
+  availabilities BarbershopAvailability[]
+  hasDefaultHours Boolean @default(false)
 }
 
 model BarbershopUser {
@@ -122,4 +124,14 @@ model Rating {
   userAvatar        String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+}
+
+model BarbershopAvailability {
+  id           String     @id @default(uuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  dayOfWeek    Int        
+  time         String     
+
+  @@unique([barbershopId, dayOfWeek, time])
 }

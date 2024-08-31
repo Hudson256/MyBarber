@@ -38,7 +38,9 @@ const BookingSummary = ({
 
         <div className="flex items-center justify-between">
           <h2 className="text-sm text-gray-400">Horário</h2>
-          <p className="text-sm">{format(selectedDate, "HH:mm")}</p>
+          <p className="text-sm">
+            {format(selectedDate, "HH:mm", { locale: ptBR })}
+          </p>
         </div>
 
         <div className="flex items-center justify-between">

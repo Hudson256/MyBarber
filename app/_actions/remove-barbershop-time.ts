@@ -2,13 +2,21 @@
 import { db } from "./../_lib/prisma"
 
 interface RemoveBarbershopTimeProps {
-  bookingId: string
+  barbershopId: string
+  dayOfWeek: number
+  time: string
 }
 
 export async function removeBarbershopTime({
-  bookingId,
+  barbershopId,
+  dayOfWeek,
+  time,
 }: RemoveBarbershopTimeProps) {
-  await db.booking.delete({
-    where: { id: bookingId },
+  await db.barbershopAvailability.deleteMany({
+    where: {
+      barbershopId,
+      dayOfWeek,
+      time,
+    },
   })
 }
