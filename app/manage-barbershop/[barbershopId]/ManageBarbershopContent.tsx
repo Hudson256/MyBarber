@@ -3,20 +3,21 @@
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
 import { useState, useEffect, useCallback } from "react"
-import { Button } from "../../_components/ui/button"
-import { Calendar } from "../../_components/ui/calendar"
-import Header from "../../_components/header"
+import { Button } from "@/app/_components/ui/button"
+import { Calendar } from "@/app/_components/ui/calendar"
+import Header from "@/app/_components/header"
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
   DialogTitle,
   DialogDescription,
-} from "../../_components/ui/dialog"
+} from "@/app/_components/ui/dialog"
 import { toast } from "sonner"
 import { ptBR } from "date-fns/locale"
+import { format, parseISO, setHours, setMinutes } from "date-fns"
 
-export default function ManageBarbershop() {
+export default function ManageBarbershopContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const { barbershopId } = useParams()
@@ -40,14 +41,8 @@ export default function ManageBarbershop() {
       const newTimes = Array.isArray(data.availableTimes)
         ? data.availableTimes
         : []
-      // Ordenar os horários
-      const sortedTimes = newTimes.sort((a: string, b: string) => {
-        const [aHours, aMinutes] = a.split(":").map(Number)
-        const [bHours, bMinutes] = b.split(":").map(Number)
-        return aHours * 60 + aMinutes - (bHours * 60 + bMinutes)
-      })
-      setAvailableTimes(sortedTimes)
-      console.log("Available times set:", sortedTimes)
+      setAvailableTimes(newTimes)
+      console.log("Available times set:", newTimes)
     } catch (error) {
       console.error("Erro ao buscar horários:", error)
       toast.error("Erro ao carregar horários. Tente novamente.")
@@ -136,93 +131,115 @@ export default function ManageBarbershop() {
     }
   }
 
+  // Função para ordenar horários
+  const sortTimes = (times: string[]) => {
+    return times.sort((a, b) => {
+      const [aHours, aMinutes] = a.split(":").map(Number)
+      const [bHours, bMinutes] = b.split(":").map(Number)
+      return aHours * 60 + aMinutes - (bHours * 60 + bMinutes)
+    })
+  }
+
+  // Função para ordenar agendamentos
+  const sortAppointments = (appointments: any[]) => {
+    return appointments.sort((a, b) => {
+      const dateA = parseISO(a.date)
+      const dateB = parseISO(b.date)
+      const [hoursA, minutesA] = a.time.split(":").map(Number)
+      const [hoursB, minutesB] = b.time.split(":").map(Number)
+
+      const dateTimeA = setMinutes(setHours(dateA, hoursA), minutesA)
+      const dateTimeB = setMinutes(setHours(dateB, hoursB), minutesB)
+
+      return dateTimeA.getTime() - dateTimeB.getTime()
+    })
+  }
+
   return (
     <>
       <Header />
-      <div className="p-5">
-        <h1 className="mb-4 text-2xl font-bold">Gerenciar Horários</h1>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={setSelectedDate}
-          className="mb-4"
-          locale={ptBR}
-        />
+      <div className="container mx-auto p-5">
+        <h1 className="mb-4 text-2xl font-bold">Gerenciar Barbearia</h1>
 
-        {selectedDate && (
-          <div>
-            <h2 className="mb-2 text-xl">
-              Horários para {selectedDate.toLocaleDateString("pt-BR")} (
-              {
-                [
-                  "Domingo",
-                  "Segunda",
-                  "Terça",
-                  "Quarta",
-                  "Quinta",
-                  "Sexta",
-                  "Sábado",
-                ][selectedDate.getDay()]
-              }
-              )
-            </h2>
-            {availableTimes.length > 0 ? (
-              <ul className="mb-4 space-y-2">
-                {availableTimes.map((time) => (
-                  <li key={time} className="flex items-center justify-between">
-                    <span>{time}</span>
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="w-full md:w-1/2">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md border"
+              locale={ptBR}
+            />
+          </div>
+
+          <div className="w-full md:w-1/2">
+            {selectedDate && (
+              <div>
+                <h2 className="mb-2 text-xl font-semibold">
+                  Horários para{" "}
+                  {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+                </h2>
+                <div className="mb-4 grid grid-cols-3 gap-2">
+                  {sortTimes(availableTimes).map((time) => (
                     <Button
-                      variant="destructive"
-                      size="sm"
+                      key={time}
+                      variant="outline"
+                      className="group relative text-sm transition-colors hover:bg-red-100"
                       onClick={() => handleRemoveTime(time)}
                     >
-                      Remover
+                      {time}
+                      <span className="ml-2 font-bold text-red-500">×</span>
+                      <span className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                        Remover
+                      </span>
                     </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>Nenhum horário disponível para esta data.</p>
-            )}
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>Adicionar Novo Horário</Button>
-              </DialogTrigger>
-              <DialogContent className="w-[90%]">
-                <DialogTitle>Adicionar Novo Horário</DialogTitle>
-                <DialogDescription>
-                  Selecione um horário para adicionar à disponibilidade da
-                  barbearia.
-                </DialogDescription>
-                <div className="mt-4">
-                  <input
-                    type="time"
-                    value={newTime}
-                    onChange={(e) => setNewTime(e.target.value)}
-                    className="mb-4 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <Button onClick={handleNewTimeAdd}>Adicionar</Button>
+                  ))}
                 </div>
-              </DialogContent>
-            </Dialog>
 
-            <h2 className="mb-2 mt-8 text-xl">Agendamentos para este dia</h2>
-            <ul className="space-y-2">
-              {appointments.map((appointment) => (
-                <li
-                  key={appointment.id}
-                  className="flex flex-wrap items-center justify-between"
-                >
-                  <span>
-                    {appointment.time} - {appointment.clientName} -{" "}
-                    {appointment.serviceName}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="w-full">Adicionar Novo Horário</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogTitle>Adicionar Novo Horário</DialogTitle>
+                    <DialogDescription>
+                      Selecione um horário para adicionar à disponibilidade da
+                      barbearia.
+                    </DialogDescription>
+                    <div className="grid gap-4 py-4">
+                      <input
+                        type="time"
+                        value={newTime}
+                        onChange={(e) => setNewTime(e.target.value)}
+                        className="w-full rounded-md border border-gray-300 bg-background p-2 text-foreground dark:border-gray-700"
+                      />
+                      <Button onClick={handleNewTimeAdd}>Adicionar</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-semibold">Agendamentos</h2>
+          <div className="space-y-4">
+            {sortAppointments(appointments).map((appointment) => (
+              <div
+                key={appointment.id}
+                className="rounded-md border p-4 shadow-sm"
+              >
+                <p className="font-semibold">
+                  {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
+                  {appointment.time}
+                </p>
+                <p>Cliente: {appointment.clientName}</p>
+                <p>Serviço: {appointment.serviceName}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   )
