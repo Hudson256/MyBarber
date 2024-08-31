@@ -2,7 +2,8 @@
 
 ## Overview
 
-**MyBarber** é uma plataforma web moderna desenvolvida para barbearias, permitindo que estas gerenciem seus horários, vejam agendamentos e interajam com seus clientes de maneira eficiente. O projeto foi desenvolvido utilizando tecnologias de ponta, proporcionando uma experiência rápida, responsiva e segura tanto para barbearias quanto para clientes.
+**MyBarber** é uma plataforma web moderna desenvolvida para barbearias, permitindo que estas gerenciem seus horários, vejam agendamentos e interajam com seus clientes de maneira eficiente. 
+O projeto foi desenvolvido utilizando tecnologias de ponta, proporcionando uma experiência rápida, responsiva e segura tanto para barbearias quanto para clientes.
 
 ## Funcionalidades Principais
 
