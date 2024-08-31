@@ -1,7 +1,13 @@
 "use client"
 
 import { Button } from "./ui/button"
-import { CalendarIcon, HomeIcon, LogInIcon, LogOutIcon } from "lucide-react"
+import {
+  CalendarIcon,
+  HomeIcon,
+  LogInIcon,
+  LogOutIcon,
+  Store,
+} from "lucide-react"
 import { SheetClose, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { quickSearchOptions } from "../_constants/search"
 import Link from "next/link"
@@ -66,7 +72,10 @@ const SidebarSheet = () => {
           </Link>
         </Button>
         <Button className="justify-start gap-2" variant="ghost" asChild>
-          <Link href="/manage-barbershop">Sou uma barbearia</Link>
+          <Link href="/manage-barbershop">
+            <Store size={18} />
+            Sou uma barbearia
+          </Link>
         </Button>
       </div>
 
