@@ -13,7 +13,7 @@ import {
 } from "./ui/sheet"
 import { Calendar } from "./ui/calendar"
 import { ptBR } from "date-fns/locale"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { set } from "date-fns"
 import { createBooking } from "../_actions/create-booking"
 import { useSession } from "next-auth/react"
@@ -40,31 +40,50 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchTimes = async () => {
-      if (!selectedDay) return
-      setIsLoading(true)
-      try {
-        const response = await fetch(
-          `/api/barbershop-times?barbershopId=${barbershop.id}&date=${selectedDay.toISOString()}`,
-        )
-        if (!response.ok) {
-          throw new Error("Failed to fetch available times")
-        }
-        const times = await response.json()
-        setAvailableTimes(times)
-      } catch (error) {
-        console.error("Erro ao buscar horários disponíveis:", error)
-        toast.error(
-          "Erro ao carregar horários disponíveis. Por favor, tente novamente.",
-        )
-      } finally {
-        setIsLoading(false)
+  const fetchTimes = useCallback(async () => {
+    if (!selectedDay) return
+    setIsLoading(true)
+    try {
+      console.log(
+        "Fetching times for:",
+        barbershop.id,
+        selectedDay.toISOString(),
+      )
+      const response = await fetch(
+        `/api/barbershop-times?barbershopId=${barbershop.id}&date=${selectedDay.toISOString()}`,
+      )
+      if (!response.ok) {
+        throw new Error("Failed to fetch available times")
       }
-    }
+      const data = await response.json()
+      console.log("Received data:", data)
 
-    fetchTimes()
+      const newTimes = Array.isArray(data.availableTimes)
+        ? data.availableTimes
+        : []
+      // Ordenar os horários
+      const sortedTimes = newTimes.sort((a: string, b: string) => {
+        const [aHours, aMinutes] = a.split(":").map(Number)
+        const [bHours, bMinutes] = b.split(":").map(Number)
+        return aHours * 60 + aMinutes - (bHours * 60 + bMinutes)
+      })
+      setAvailableTimes(sortedTimes)
+      console.log("Available times set:", sortedTimes)
+    } catch (error) {
+      console.error("Erro ao buscar horários disponíveis:", error)
+      toast.error(
+        "Erro ao carregar horários disponíveis. Por favor, tente novamente.",
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }, [selectedDay, barbershop.id])
+
+  useEffect(() => {
+    if (selectedDay) {
+      fetchTimes()
+    }
+  }, [selectedDay, fetchTimes])
 
   const selectedDate = useMemo(() => {
     if (!selectedDay || !selectedTime) return
