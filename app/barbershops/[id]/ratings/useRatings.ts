@@ -1,43 +1,41 @@
 // /app/barbershops/[id]/ratings/useRatings.ts
 
-import { useState, useEffect } from "react"
-import { fetchServices, submitRating } from "./ratings-api"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
-export const useServices = (barbershopId: string) => {
-  const [services, setServices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const services = await fetchServices(barbershopId)
-        setServices(services)
-      } catch (err) {
-        setError("Failed to load services")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadServices()
-  }, [barbershopId])
-
-  return { services, loading, error }
+interface Rating {
+  serviceId: string | null
+  barberId: string | null // Adicionado barberId
+  rating: number
+  message: string
 }
 
-export const useSubmitRating = (barbershopId: string) => {
+const submitRating = async (barbershopId: string, rating: Rating) => {
+  const response = await fetch(`/api/barbershops/${barbershopId}/ratings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(rating),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to submit rating")
+  }
+
+  return response.json()
+}
+
+export const useRatings = (barbershopId: string) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const submit = async (rating: {
-    serviceId: string | null
-    rating: number
-    message: string
-  }) => {
+  const handleSubmitRating = async (rating: Rating) => {
     setLoading(true)
     try {
       await submitRating(barbershopId, rating)
+      router.refresh()
     } catch (err) {
       setError("Failed to submit rating")
     } finally {
@@ -45,5 +43,5 @@ export const useSubmitRating = (barbershopId: string) => {
     }
   }
 
-  return { submit, loading, error }
+  return { handleSubmitRating, loading, error }
 }

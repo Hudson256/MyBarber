@@ -25,6 +25,15 @@ interface Barber {
   description: string
 }
 
+interface Appointment {
+  id: string
+  date: string
+  time: string
+  clientName: string
+  serviceName: string
+  barberName: string // Adicionado nome do barbeiro
+}
+
 export default function ManageBarbershopContent() {
   const { data: session } = useSession()
   const router = useRouter()
@@ -32,7 +41,7 @@ export default function ManageBarbershopContent() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [newTime, setNewTime] = useState<string>("")
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
-  const [appointments, setAppointments] = useState<any[]>([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
   const [barbers, setBarbers] = useState<Barber[]>([])
   const [newBarber, setNewBarber] = useState({ name: "", description: "" })
 
@@ -203,7 +212,7 @@ export default function ManageBarbershopContent() {
   }
 
   // Função para ordenar agendamentos
-  const sortAppointments = (appointments: any[]) => {
+  const sortAppointments = (appointments: Appointment[]) => {
     return appointments.sort((a, b) => {
       const dateA = parseISO(a.date)
       const dateB = parseISO(b.date)
@@ -220,8 +229,10 @@ export default function ManageBarbershopContent() {
   return (
     <>
       <Header />
-      <div className="container mx-auto p-5">
-        <h1 className="mb-4 text-2xl font-bold">Gerenciar Barbearia</h1>
+      <div className="container mx-auto bg-gray-900 p-5 text-gray-100">
+        <h1 className="mb-4 text-2xl font-bold text-primary">
+          Gerenciar Barbearia
+        </h1>
 
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="w-full md:w-1/2">
@@ -229,7 +240,7 @@ export default function ManageBarbershopContent() {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              className="rounded-md border"
+              className="rounded-md border border-gray-700 bg-gray-800"
               locale={ptBR}
             />
           </div>
@@ -237,7 +248,7 @@ export default function ManageBarbershopContent() {
           <div className="w-full md:w-1/2">
             {selectedDate && (
               <div>
-                <h2 className="mb-2 text-xl font-semibold">
+                <h2 className="mb-2 text-xl font-semibold text-gray-200">
                   Horários para{" "}
                   {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
                 </h2>
@@ -246,12 +257,12 @@ export default function ManageBarbershopContent() {
                     <Button
                       key={time}
                       variant="outline"
-                      className="group relative text-sm transition-colors hover:bg-red-100"
+                      className="group relative bg-gray-800 text-sm text-gray-300 transition-colors hover:bg-red-900 hover:text-gray-100"
                       onClick={() => handleRemoveTime(time)}
                     >
                       {time}
                       <span className="ml-2 font-bold text-red-500">×</span>
-                      <span className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="absolute inset-0 flex items-center justify-center bg-red-800 text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
                         Remover
                       </span>
                     </Button>
@@ -260,11 +271,15 @@ export default function ManageBarbershopContent() {
 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="w-full">Adicionar Novo Horário</Button>
+                    <Button className="hover:bg-primary-dark w-full bg-primary text-gray-900">
+                      Adicionar Novo Horário
+                    </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogTitle>Adicionar Novo Horário</DialogTitle>
-                    <DialogDescription>
+                  <DialogContent className="bg-gray-800 text-gray-100 sm:max-w-[425px]">
+                    <DialogTitle className="text-primary">
+                      Adicionar Novo Horário
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-400">
                       Selecione um horário para adicionar à disponibilidade da
                       barbearia.
                     </DialogDescription>
@@ -273,9 +288,14 @@ export default function ManageBarbershopContent() {
                         type="time"
                         value={newTime}
                         onChange={(e) => setNewTime(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 bg-background p-2 text-foreground dark:border-gray-700"
+                        className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100"
                       />
-                      <Button onClick={handleNewTimeAdd}>Adicionar</Button>
+                      <Button
+                        onClick={handleNewTimeAdd}
+                        className="hover:bg-primary-dark bg-primary text-gray-900"
+                      >
+                        Adicionar
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -285,19 +305,28 @@ export default function ManageBarbershopContent() {
         </div>
 
         <div className="mt-8">
-          <h2 className="mb-4 text-xl font-semibold">Agendamentos</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-200">
+            Agendamentos
+          </h2>
           <div className="space-y-4">
-            {sortAppointments(appointments).map((appointment) => (
+            {sortAppointments(appointments).map((appointment: Appointment) => (
               <div
                 key={appointment.id}
-                className="rounded-md border p-4 shadow-sm"
+                className="rounded-md border border-gray-700 bg-gray-800 p-4 shadow-sm"
               >
-                <p className="font-semibold">
+                <p className="font-semibold text-gray-200">
                   {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
                   {appointment.time}
                 </p>
-                <p>Cliente: {appointment.clientName}</p>
-                <p>Serviço: {appointment.serviceName}</p>
+                <p className="text-gray-300">
+                  Cliente: {appointment.clientName}
+                </p>
+                <p className="text-gray-300">
+                  Serviço: {appointment.serviceName}
+                </p>
+                <p className="text-gray-300">
+                  Barbeiro: {appointment.barberName}
+                </p>
               </div>
             ))}
           </div>
@@ -336,15 +365,22 @@ export default function ManageBarbershopContent() {
                 setNewBarber({ ...newBarber, name: e.target.value })
               }
               placeholder="Nome do barbeiro"
+              className="border-gray-700 bg-gray-800 text-gray-100"
             />
             <Textarea
               value={newBarber.description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onChange={(e) =>
                 setNewBarber({ ...newBarber, description: e.target.value })
               }
               placeholder="Descrição"
+              className="border-gray-700 bg-gray-800 text-gray-100"
             />
-            <Button type="submit">Adicionar Barbeiro</Button>
+            <Button
+              type="submit"
+              className="hover:bg-primary-dark bg-primary text-gray-900"
+            >
+              Adicionar Barbeiro
+            </Button>
           </form>
         </div>
       </div>

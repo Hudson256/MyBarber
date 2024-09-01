@@ -9,6 +9,7 @@ interface Rating {
   serviceId: string
   rating: number
   message: string | null
+  barberName?: string // Adicionado nome do barbeiro
 }
 
 interface RatingDisplayProps {
@@ -53,12 +54,12 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
         </p>
       </div>
 
-      {ratings.map((rating) => {
+      {ratings.map((rating, index) => {
         const service = findService(rating.serviceId)
 
         return (
           <div
-            key={rating.userName}
+            key={`${rating.userName}-${index}`}
             className="flex rounded-lg border border-gray-200 p-4 shadow-sm"
           >
             <div className="mr-4 flex-shrink-0">
@@ -76,6 +77,11 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
                   <p className="font-semibold">{rating.userName}</p>
                   {service && (
                     <p className="text-sm text-gray-500">{service.name}</p>
+                  )}
+                  {rating.barberName && (
+                    <p className="text-sm text-gray-500">
+                      Barbeiro: {rating.barberName}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center">
