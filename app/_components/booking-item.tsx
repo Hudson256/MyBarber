@@ -30,15 +30,8 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog"
 import { deleteBooking } from "../_actions/delete-booking"
 import { toast } from "sonner"
-import { useState, useEffect } from "react"
+import { useState, useRef } from "react"
 import BookingSummary from "./booking-summary"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select"
 
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
@@ -48,42 +41,19 @@ interface BookingItemProps {
           barbershop: true
         }
       }
+      barber: true
     }
   }>
 }
 
-interface Barber {
-  id: string
-  name: string
-}
-
 const BookingItem = ({ booking }: BookingItemProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [selectedBarber, setSelectedBarber] = useState("")
-  const [barbers, setBarbers] = useState<Barber[]>([])
   const {
     service: { barbershop },
+    barber,
   } = booking
   const isConfirmed = isFuture(booking.date)
-
-  useEffect(() => {
-    async function fetchBarbers() {
-      try {
-        const response = await fetch(
-          `/api/barbers?barbershopId=${barbershop.id}`,
-        )
-        if (!response.ok) {
-          throw new Error("Failed to fetch barbers")
-        }
-        const data = await response.json()
-        setBarbers(data)
-      } catch (error) {
-        console.error("Error fetching barbers:", error)
-        toast.error("Erro ao carregar barbeiros. Por favor, tente novamente.")
-      }
-    }
-    fetchBarbers()
-  }, [barbershop.id])
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const handleCancelBooking = async () => {
     try {
@@ -98,19 +68,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
   const handleSheetOpenChange = (isOpen: boolean) => {
     setIsSheetOpen(isOpen)
-  }
-
-  const handleBarberChange = async (barberId: string) => {
-    setSelectedBarber(barberId)
-    try {
-      // Aqui você implementaria a lógica para atualizar o barbeiro do agendamento
-      // Por exemplo:
-      // await updateBookingBarber(booking.id, barberId)
-      toast.success("Barbeiro atualizado com sucesso!")
-    } catch (error) {
-      console.error("Error updating barber:", error)
-      toast.error("Erro ao atualizar barbeiro. Por favor, tente novamente.")
-    }
   }
 
   return (
@@ -150,79 +107,72 @@ const BookingItem = ({ booking }: BookingItemProps) => {
           </CardContent>
         </Card>
       </SheetTrigger>
-      <SheetContent className="w-[85%]">
+      <SheetContent className="flex w-[85%] flex-col">
         <SheetHeader>
           <SheetTitle className="text-left">Informações da Reserva</SheetTitle>
         </SheetHeader>
 
-        <div className="relative mt-6 flex h-[180px] w-full items-end">
-          <Image
-            alt={`Mapa da barbearia ${booking.service.barbershop.name}`}
-            src="/map.png"
-            fill
-            className="rounded-xl object-cover"
-          />
-
-          <Card className="z-50 mx-5 mb-3 w-full rounded-xl">
-            <CardContent className="flex items-center gap-3 px-5 py-3">
-              <Avatar>
-                <AvatarImage src={barbershop.imageUrl} />
-              </Avatar>
-              <div>
-                <h3 className="font-bold">{barbershop.name}</h3>
-                <p className="text-xs">{barbershop.address}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-6">
-          <Badge
-            className="w-fit"
-            variant={isConfirmed ? "default" : "secondary"}
-          >
-            {isConfirmed ? "Confirmado" : "Finalizado"}
-          </Badge>
-
-          <div className="mb-3 mt-6">
-            <BookingSummary
-              barbershop={barbershop}
-              service={booking.service}
-              selectedDate={booking.date}
-              selectedBarberId={booking.barberId}
-              barbers={barbers}
+        <div ref={contentRef} className="flex-1 overflow-y-auto">
+          <div className="relative mt-6 flex h-[180px] w-full items-end">
+            <Image
+              alt={`Mapa da barbearia ${booking.service.barbershop.name}`}
+              src="/map.png"
+              fill
+              className="rounded-xl object-cover"
             />
+
+            <Card className="z-50 mx-5 mb-3 w-full rounded-xl">
+              <CardContent className="flex items-center gap-3 px-5 py-3">
+                <Avatar>
+                  <AvatarImage src={barbershop.imageUrl} />
+                </Avatar>
+                <div>
+                  <h3 className="font-bold">{barbershop.name}</h3>
+                  <p className="text-xs">{barbershop.address}</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {isConfirmed && (
-            <div className="mt-4">
-              <label
-                htmlFor="barber-select"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                Selecione um barbeiro
-              </label>
-              <Select onValueChange={handleBarberChange} value={selectedBarber}>
-                <SelectTrigger id="barber-select">
-                  <SelectValue placeholder="Escolha um barbeiro" />
-                </SelectTrigger>
-                <SelectContent>
-                  {barbers.map((barber) => (
-                    <SelectItem key={barber.id} value={barber.id}>
-                      {barber.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="mt-6">
+            <Badge
+              className="w-fit"
+              variant={isConfirmed ? "default" : "secondary"}
+            >
+              {isConfirmed ? "Confirmado" : "Finalizado"}
+            </Badge>
 
-          <div className="mt-4 space-y-3">
-            {barbershop.phones.map((phone, index) => (
-              <PhoneItem key={index} phone={phone} />
-            ))}
+            <div className="mb-3 mt-6">
+              <BookingSummary
+                barbershop={barbershop}
+                service={booking.service}
+                selectedDate={booking.date}
+                selectedBarberId={booking.barberId}
+              />
+            </div>
+
+            {barber && (
+              <div className="mt-4">
+                <h4 className="mb-2 text-sm font-medium text-gray-700">
+                  Barbeiro selecionado
+                </h4>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={barber.imageUrl ?? undefined} />
+                  </Avatar>
+                  <p className="text-sm">{barber.name}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 space-y-3">
+              {barbershop.phones.map((phone, index) => (
+                <PhoneItem key={index} phone={phone} />
+              ))}
+            </div>
           </div>
         </div>
+
         <SheetFooter className="mt-6">
           <div className="flex items-center gap-3">
             <SheetClose asChild>

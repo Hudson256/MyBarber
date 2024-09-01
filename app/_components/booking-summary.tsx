@@ -8,7 +8,7 @@ interface BookingSummaryProps {
   service: BarbershopService
   selectedDate: Date
   selectedBarberId: string
-  barbers: Array<{ id: string; name: string }>
+  // Removemos a propriedade barbers daqui
 }
 
 const BookingSummary = ({

@@ -214,7 +214,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="min-w-16vw flex min-h-[100vh] flex-col items-center overflow-y-auto overflow-x-hidden px-0">
+                <SheetContent className="w-[90%] p-0">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
@@ -289,7 +289,6 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                         service={service}
                         selectedDate={selectedDate}
                         selectedBarberId={selectedBarberId}
-                        barbers={barbers}
                       />
                     </div>
                   )}
