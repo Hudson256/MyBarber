@@ -30,10 +30,3 @@ export const useSubmitRating = (barbershopId: string) => {
 
   return { handleSubmitRating, loading, error }
 }
-
-// Se você realmente precisa de useServices, defina-o aqui
-// Por exemplo:
-export const useServices = () => {
-  // Implemente a lógica de useServices aqui
-  // ...
-}

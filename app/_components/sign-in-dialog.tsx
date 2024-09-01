@@ -1,33 +1,40 @@
 import { signIn } from "next-auth/react"
 import { Button } from "./ui/button"
 import { DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
-import Image from "next/image"
+import { FaGoogle, FaDiscord, FaGithub, FaLinkedin } from "react-icons/fa"
+
+const providers = [
+  { name: "google", label: "Google", icon: FaGoogle },
+  { name: "discord", label: "Discord", icon: FaDiscord },
+  { name: "github", label: "GitHub", icon: FaGithub },
+  { name: "linkedin", label: "LinkedIn", icon: FaLinkedin },
+]
 
 const SignInDialog = () => {
-  const handleLoginWithGoogleClick = () => signIn("google")
+  const handleLogin = (provider: string) => () => signIn(provider)
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>Faça login na plataforma</DialogTitle>
         <DialogDescription>
-          Conecte-se usando sua conta do Google.
+          Conecte-se usando uma das opções abaixo.
         </DialogDescription>
       </DialogHeader>
 
-      <Button
-        variant="outline"
-        className="gap-1 font-bold"
-        onClick={handleLoginWithGoogleClick}
-      >
-        <Image
-          alt="Fazer login com o Google"
-          src="/google.svg"
-          width={18}
-          height={18}
-        />
-        Google
-      </Button>
+      <div className="flex flex-col space-y-2">
+        {providers.map((provider) => (
+          <Button
+            key={provider.name}
+            variant="outline"
+            className="gap-2 font-bold"
+            onClick={handleLogin(provider.name)}
+          >
+            <provider.icon className="h-5 w-5" />
+            {provider.label}
+          </Button>
+        ))}
+      </div>
     </>
   )
 }
