@@ -35,6 +35,12 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
+        barber: {
+          // Adicionado seleção do barbeiro
+          select: {
+            name: true,
+          },
+        },
       },
     })
 
@@ -47,6 +53,7 @@ export async function GET(request: NextRequest) {
       }),
       clientName: appointment.user.name || "Cliente não identificado",
       serviceName: appointment.service.name,
+      barberName: appointment.barber?.name || "Barbeiro não especificado", // Adicionado nome do barbeiro
     }))
 
     return NextResponse.json(formattedAppointments)
