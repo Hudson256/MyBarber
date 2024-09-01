@@ -11,8 +11,6 @@ interface BarbershopItemProps {
 }
 
 const BarbershopItem: React.FC<BarbershopItemProps> = ({ barbershop }) => {
-  // Garante que ratings é um array, mesmo que vazio
-
   return (
     <div>
       <Card className="min-w-[167px] rounded-2xl">

@@ -18,6 +18,11 @@ import { Textarea } from "@/app/_components/ui/textarea"
 import { toast } from "sonner"
 import { ptBR } from "date-fns/locale"
 import { format, parseISO, setHours, setMinutes } from "date-fns"
+import {
+  addService,
+  updateService,
+  deleteService,
+} from "@/app/_actions/service-actions"
 
 interface Barber {
   id: string
@@ -34,6 +39,14 @@ interface Appointment {
   barberName: string // Adicionado nome do barbeiro
 }
 
+interface Service {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  price: number
+}
+
 export default function ManageBarbershopContent() {
   const { data: session } = useSession()
   const router = useRouter()
@@ -44,6 +57,14 @@ export default function ManageBarbershopContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [barbers, setBarbers] = useState<Barber[]>([])
   const [newBarber, setNewBarber] = useState({ name: "", description: "" })
+  const [services, setServices] = useState<Service[]>([])
+  const [newService, setNewService] = useState({
+    name: "",
+    description: "",
+    imageUrl: "",
+    price: "",
+  })
+  const [editingService, setEditingService] = useState<Service | null>(null)
 
   const fetchTimes = useCallback(async () => {
     if (!barbershopId || !selectedDate) return
@@ -98,6 +119,20 @@ export default function ManageBarbershopContent() {
     }
   }, [barbershopId])
 
+  const fetchServices = useCallback(async () => {
+    if (!barbershopId) return
+
+    try {
+      const response = await fetch(`/api/services?barbershopId=${barbershopId}`)
+      if (!response.ok) throw new Error("Falha ao buscar serviços")
+      const data = await response.json()
+      setServices(data)
+    } catch (error) {
+      console.error("Erro ao buscar serviços:", error)
+      toast.error("Erro ao carregar serviços. Tente novamente.")
+    }
+  }, [barbershopId])
+
   useEffect(() => {
     if (!session) {
       router.push("/login")
@@ -120,8 +155,9 @@ export default function ManageBarbershopContent() {
   useEffect(() => {
     if (barbershopId) {
       fetchBarbers()
+      fetchServices()
     }
-  }, [barbershopId, fetchBarbers])
+  }, [barbershopId, fetchBarbers, fetchServices])
 
   const handleAddTime = async (time: string) => {
     try {
@@ -199,6 +235,49 @@ export default function ManageBarbershopContent() {
     } catch (error) {
       console.error("Erro ao remover barbeiro:", error)
       toast.error("Erro ao remover barbeiro. Tente novamente.")
+    }
+  }
+
+  const handleAddService = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      await addService({
+        ...newService,
+        price: parseFloat(newService.price),
+        barbershopId: barbershopId as string,
+      })
+      setNewService({ name: "", description: "", imageUrl: "", price: "" })
+      fetchServices()
+      toast.success("Serviço adicionado com sucesso!")
+    } catch (error) {
+      console.error("Erro ao adicionar serviço:", error)
+      toast.error("Erro ao adicionar serviço. Tente novamente.")
+    }
+  }
+
+  const handleUpdateService = async (
+    serviceId: string,
+    updatedData: Partial<Service>,
+  ) => {
+    try {
+      await updateService(serviceId, updatedData)
+      fetchServices()
+      setEditingService(null)
+      toast.success("Serviço atualizado com sucesso!")
+    } catch (error) {
+      console.error("Erro ao atualizar serviço:", error)
+      toast.error("Erro ao atualizar serviço. Tente novamente.")
+    }
+  }
+
+  const handleRemoveService = async (serviceId: string) => {
+    try {
+      await deleteService(serviceId)
+      fetchServices()
+      toast.success("Serviço removido com sucesso!")
+    } catch (error) {
+      console.error("Erro ao remover serviço:", error)
+      toast.error("Erro ao remover serviço. Tente novamente.")
     }
   }
 
@@ -380,6 +459,144 @@ export default function ManageBarbershopContent() {
               className="hover:bg-primary-dark bg-primary text-gray-900"
             >
               Adicionar Barbeiro
+            </Button>
+          </form>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-semibold text-gray-200">
+            Gerenciar Serviços
+          </h2>
+          <div className="mb-4 max-h-[400px] overflow-y-auto">
+            <ul className="space-y-2">
+              {services.map((service) => (
+                <li
+                  key={service.id}
+                  className="flex items-center justify-between rounded-md border border-gray-700 bg-gray-800 p-3"
+                >
+                  {editingService?.id === service.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        handleUpdateService(service.id, editingService)
+                      }}
+                      className="flex w-full items-center gap-2"
+                    >
+                      <Input
+                        value={editingService.name}
+                        onChange={(e) =>
+                          setEditingService({
+                            ...editingService,
+                            name: e.target.value,
+                          })
+                        }
+                        className="flex-grow"
+                      />
+                      <Input
+                        value={editingService.price.toString()}
+                        onChange={(e) =>
+                          setEditingService({
+                            ...editingService,
+                            price: parseFloat(e.target.value),
+                          })
+                        }
+                        type="number"
+                        step="0.01"
+                        className="w-24"
+                      />
+                      <Button type="submit">Salvar</Button>
+                      <Button
+                        onClick={() => setEditingService(null)}
+                        variant="outline"
+                      >
+                        Cancelar
+                      </Button>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={service.imageUrl}
+                            alt={service.name}
+                            className="h-12 w-12 rounded-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-100">
+                            {service.name}
+                          </span>
+                          <p className="line-clamp-2 text-sm text-gray-400">
+                            {service.description}
+                          </p>
+                          <p className="text-sm text-gray-300">
+                            R$ {Number(service.price).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditingService(service)}
+                          className="bg-blue-900 text-gray-100 hover:bg-blue-800"
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleRemoveService(service.id)}
+                          className="bg-red-900 text-gray-100 hover:bg-red-800"
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <form onSubmit={handleAddService} className="space-y-2">
+            <Input
+              value={newService.name}
+              onChange={(e) =>
+                setNewService({ ...newService, name: e.target.value })
+              }
+              placeholder="Nome do serviço"
+              className="border-gray-700 bg-gray-800 text-gray-100"
+            />
+            <Textarea
+              value={newService.description}
+              onChange={(e) =>
+                setNewService({ ...newService, description: e.target.value })
+              }
+              placeholder="Descrição"
+              className="border-gray-700 bg-gray-800 text-gray-100"
+            />
+            <Input
+              value={newService.imageUrl}
+              onChange={(e) =>
+                setNewService({ ...newService, imageUrl: e.target.value })
+              }
+              placeholder="URL da imagem"
+              className="border-gray-700 bg-gray-800 text-gray-100"
+            />
+            <Input
+              type="number"
+              step="0.01"
+              value={newService.price}
+              onChange={(e) =>
+                setNewService({ ...newService, price: e.target.value })
+              }
+              placeholder="Preço"
+              className="border-gray-700 bg-gray-800 text-gray-100"
+            />
+            <Button
+              type="submit"
+              className="hover:bg-primary-dark bg-primary text-gray-900"
+            >
+              Adicionar Serviço
             </Button>
           </form>
         </div>

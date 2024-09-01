@@ -179,7 +179,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   return (
     <>
       <Card>
-        <CardContent className="flex items-center gap-3 p-3">
+        <CardContent className="flex items-center justify-start gap-3 p-3">
           {/* IMAGE */}
           <div className="relative max-h-[110px] min-h-[110px] min-w-[110px] max-w-[110px]">
             <Image
@@ -214,7 +214,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="w-[90%] p-0">
+                <SheetContent className="flex w-[90%] flex-col items-center overflow-y-scroll p-0">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
