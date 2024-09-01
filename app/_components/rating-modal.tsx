@@ -1,36 +1,82 @@
 /* eslint-disable no-unused-vars */
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { toast } from "sonner"
 import { StarIcon } from "lucide-react"
-import { BarbershopService } from "@prisma/client" // Importa o tipo correto
+import { BarbershopService } from "@prisma/client"
+import { fetchBarbers } from "../barbershops/[id]/ratings/ratings-api"
+
+interface Barber {
+  id: string
+  name: string
+}
 
 interface RatingModalProps {
   services: BarbershopService[]
+  barbershopId: string | undefined
   onSubmit: (rating: {
     serviceId: string | null
+    barberId: string | null
     rating: number
     message: string
   }) => void
   onClose: () => void
+  isDisabled?: boolean
 }
 
 const RatingModal: React.FC<RatingModalProps> = ({
   services,
+  barbershopId,
   onSubmit,
   onClose,
+  isDisabled = false,
 }) => {
   const [serviceId, setServiceId] = useState<string | null>(null)
+  const [barberId, setBarberId] = useState<string | null>(null)
   const [rating, setRating] = useState<number>(5)
   const [message, setMessage] = useState<string>("")
   const [hoveredRating, setHoveredRating] = useState<number | null>(null)
+  const [barbers, setBarbers] = useState<Barber[]>([])
+  const [isLoadingBarbers, setIsLoadingBarbers] = useState(true)
+
+  useEffect(() => {
+    const loadBarbers = async () => {
+      if (!barbershopId) {
+        setIsLoadingBarbers(false)
+        return
+      }
+
+      setIsLoadingBarbers(true)
+      try {
+        const data = await fetchBarbers(barbershopId)
+        setBarbers(data)
+      } catch (error) {
+        console.error("Erro ao buscar barbeiros:", error)
+        toast.error("Erro ao carregar barbeiros. Tente novamente.")
+      } finally {
+        setIsLoadingBarbers(false)
+      }
+    }
+
+    loadBarbers()
+  }, [barbershopId])
 
   const handleSubmit = () => {
-    onSubmit({ serviceId, rating, message })
+    if (!barbershopId) {
+      toast.error(
+        "Não foi possível enviar a avaliação. Tente novamente mais tarde.",
+      )
+      return
+    }
+    onSubmit({ serviceId, barberId, rating, message })
     toast.success("Avaliação enviada com sucesso!")
-    onClose() // Fechar o modal após o envio
+    onClose()
+  }
+
+  if (isDisabled) {
+    return null
   }
 
   return (
@@ -60,6 +106,29 @@ const RatingModal: React.FC<RatingModalProps> = ({
                 {service.name}
               </option>
             ))}
+          </select>
+        </div>
+        <div className="my-4">
+          <label className="block text-sm font-medium text-white">
+            Selecione o barbeiro (opcional)
+          </label>
+          <select
+            value={barberId ?? ""}
+            onChange={(e) => setBarberId(e.target.value || null)}
+            className="w-full rounded border bg-gray-800 p-2 text-white"
+            disabled={isLoadingBarbers}
+          >
+            <option value="">
+              {isLoadingBarbers
+                ? "Carregando barbeiros..."
+                : "Nenhum barbeiro específico"}
+            </option>
+            {!isLoadingBarbers &&
+              barbers.map((barber) => (
+                <option key={barber.id} value={barber.id}>
+                  {barber.name}
+                </option>
+              ))}
           </select>
         </div>
         <div className="my-4">

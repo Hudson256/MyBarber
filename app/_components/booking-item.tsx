@@ -30,8 +30,15 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog"
 import { deleteBooking } from "../_actions/delete-booking"
 import { toast } from "sonner"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import BookingSummary from "./booking-summary"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select"
 
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
@@ -45,13 +52,39 @@ interface BookingItemProps {
   }>
 }
 
-// TODO: receber agendamento como prop
+interface Barber {
+  id: string
+  name: string
+}
+
 const BookingItem = ({ booking }: BookingItemProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [selectedBarber, setSelectedBarber] = useState("")
+  const [barbers, setBarbers] = useState<Barber[]>([])
   const {
     service: { barbershop },
   } = booking
   const isConfirmed = isFuture(booking.date)
+
+  useEffect(() => {
+    async function fetchBarbers() {
+      try {
+        const response = await fetch(
+          `/api/barbers?barbershopId=${barbershop.id}`,
+        )
+        if (!response.ok) {
+          throw new Error("Failed to fetch barbers")
+        }
+        const data = await response.json()
+        setBarbers(data)
+      } catch (error) {
+        console.error("Error fetching barbers:", error)
+        toast.error("Erro ao carregar barbeiros. Por favor, tente novamente.")
+      }
+    }
+    fetchBarbers()
+  }, [barbershop.id])
+
   const handleCancelBooking = async () => {
     try {
       await deleteBooking(booking.id)
@@ -62,9 +95,24 @@ const BookingItem = ({ booking }: BookingItemProps) => {
       toast.error("Erro ao cancelar reserva. Tente novamente.")
     }
   }
+
   const handleSheetOpenChange = (isOpen: boolean) => {
     setIsSheetOpen(isOpen)
   }
+
+  const handleBarberChange = async (barberId: string) => {
+    setSelectedBarber(barberId)
+    try {
+      // Aqui você implementaria a lógica para atualizar o barbeiro do agendamento
+      // Por exemplo:
+      // await updateBookingBarber(booking.id, barberId)
+      toast.success("Barbeiro atualizado com sucesso!")
+    } catch (error) {
+      console.error("Error updating barber:", error)
+      toast.error("Erro ao atualizar barbeiro. Por favor, tente novamente.")
+    }
+  }
+
   return (
     <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
       <SheetTrigger className="w-full min-w-[90%]">
@@ -141,10 +189,35 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               barbershop={barbershop}
               service={booking.service}
               selectedDate={booking.date}
+              selectedBarberId={booking.barberId}
+              barbers={barbers}
             />
           </div>
 
-          <div className="space-y-3">
+          {isConfirmed && (
+            <div className="mt-4">
+              <label
+                htmlFor="barber-select"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
+                Selecione um barbeiro
+              </label>
+              <Select onValueChange={handleBarberChange} value={selectedBarber}>
+                <SelectTrigger id="barber-select">
+                  <SelectValue placeholder="Escolha um barbeiro" />
+                </SelectTrigger>
+                <SelectContent>
+                  {barbers.map((barber) => (
+                    <SelectItem key={barber.id} value={barber.id}>
+                      {barber.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="mt-4 space-y-3">
             {barbershop.phones.map((phone, index) => (
               <PhoneItem key={index} phone={phone} />
             ))}

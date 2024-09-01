@@ -14,9 +14,22 @@ export const fetchServices = async (barbershopId: string) => {
   }
 }
 
+export async function fetchBarbers(barbershopId: string) {
+  const response = await fetch(`/api/barbers?barbershopId=${barbershopId}`)
+  if (!response.ok) {
+    throw new Error("Falha ao buscar barbeiros")
+  }
+  return response.json()
+}
+
 export const submitRating = async (
   barbershopId: string,
-  rating: { serviceId: string | null; rating: number; message: string },
+  rating: {
+    serviceId: string | null
+    barberId: string | null
+    rating: number
+    message: string
+  },
 ) => {
   try {
     const response = await fetch(`/barbershops/${barbershopId}/ratings`, {

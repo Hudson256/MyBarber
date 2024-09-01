@@ -13,9 +13,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/app/_components/ui/dialog"
+import { Input } from "@/app/_components/ui/input"
+import { Textarea } from "@/app/_components/ui/textarea"
 import { toast } from "sonner"
 import { ptBR } from "date-fns/locale"
 import { format, parseISO, setHours, setMinutes } from "date-fns"
+
+interface Barber {
+  id: string
+  name: string
+  description: string
+}
 
 export default function ManageBarbershopContent() {
   const { data: session } = useSession()
@@ -25,6 +33,8 @@ export default function ManageBarbershopContent() {
   const [newTime, setNewTime] = useState<string>("")
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
+  const [barbers, setBarbers] = useState<Barber[]>([])
+  const [newBarber, setNewBarber] = useState({ name: "", description: "" })
 
   const fetchTimes = useCallback(async () => {
     if (!barbershopId || !selectedDate) return
@@ -65,6 +75,20 @@ export default function ManageBarbershopContent() {
     }
   }, [barbershopId, selectedDate])
 
+  const fetchBarbers = useCallback(async () => {
+    if (!barbershopId) return
+
+    try {
+      const response = await fetch(`/api/barbers?barbershopId=${barbershopId}`)
+      if (!response.ok) throw new Error("Falha ao buscar barbeiros")
+      const data = await response.json()
+      setBarbers(data)
+    } catch (error) {
+      console.error("Erro ao buscar barbeiros:", error)
+      toast.error("Erro ao carregar barbeiros. Tente novamente.")
+    }
+  }, [barbershopId])
+
   useEffect(() => {
     if (!session) {
       router.push("/login")
@@ -83,6 +107,12 @@ export default function ManageBarbershopContent() {
     fetchTimes,
     fetchAppointments,
   ])
+
+  useEffect(() => {
+    if (barbershopId) {
+      fetchBarbers()
+    }
+  }, [barbershopId, fetchBarbers])
 
   const handleAddTime = async (time: string) => {
     try {
@@ -128,6 +158,38 @@ export default function ManageBarbershopContent() {
     if (newTime) {
       await handleAddTime(newTime)
       setNewTime("")
+    }
+  }
+
+  const handleAddBarber = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      const response = await fetch("/api/barbers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newBarber, barbershopId }),
+      })
+      if (!response.ok) throw new Error("Falha ao adicionar barbeiro")
+      setNewBarber({ name: "", description: "" })
+      fetchBarbers()
+      toast.success("Barbeiro adicionado com sucesso!")
+    } catch (error) {
+      console.error("Erro ao adicionar barbeiro:", error)
+      toast.error("Erro ao adicionar barbeiro. Tente novamente.")
+    }
+  }
+
+  const handleRemoveBarber = async (barberId: string) => {
+    try {
+      const response = await fetch(`/api/barbers/${barberId}`, {
+        method: "DELETE",
+      })
+      if (!response.ok) throw new Error("Falha ao remover barbeiro")
+      fetchBarbers()
+      toast.success("Barbeiro removido com sucesso!")
+    } catch (error) {
+      console.error("Erro ao remover barbeiro:", error)
+      toast.error("Erro ao remover barbeiro. Tente novamente.")
     }
   }
 
@@ -239,6 +301,51 @@ export default function ManageBarbershopContent() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-semibold text-gray-200">
+            Gerenciar Barbeiros
+          </h2>
+          <ul className="mb-4 space-y-2">
+            {barbers.map((barber) => (
+              <li
+                key={barber.id}
+                className="flex items-center justify-between rounded-md border border-gray-700 bg-gray-800 p-3"
+              >
+                <div>
+                  <span className="font-medium text-gray-100">
+                    {barber.name}
+                  </span>
+                  <p className="text-sm text-gray-400">{barber.description}</p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleRemoveBarber(barber.id)}
+                  className="bg-red-900 text-gray-100 hover:bg-red-800"
+                >
+                  Remover
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <form onSubmit={handleAddBarber} className="space-y-2">
+            <Input
+              value={newBarber.name}
+              onChange={(e) =>
+                setNewBarber({ ...newBarber, name: e.target.value })
+              }
+              placeholder="Nome do barbeiro"
+            />
+            <Textarea
+              value={newBarber.description}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setNewBarber({ ...newBarber, description: e.target.value })
+              }
+              placeholder="Descrição"
+            />
+            <Button type="submit">Adicionar Barbeiro</Button>
+          </form>
         </div>
       </div>
     </>

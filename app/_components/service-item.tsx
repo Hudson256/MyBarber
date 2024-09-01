@@ -39,6 +39,13 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const [bookingSheetIsOpen, setBookingSheetIsOpen] = useState(false)
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(
+    undefined,
+  )
+  const [barbers, setBarbers] = useState<Array<{ id: string; name: string }>>(
+    [],
+  )
+  const [isLoadingBarbers, setIsLoadingBarbers] = useState(false)
 
   const fetchTimes = useCallback(async () => {
     if (!selectedDay) return
@@ -79,11 +86,33 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     }
   }, [selectedDay, barbershop.id])
 
+  const fetchBarbers = useCallback(async () => {
+    if (!barbershop.id) return
+    setIsLoadingBarbers(true)
+    try {
+      const response = await fetch(`/api/barbers?barbershopId=${barbershop.id}`)
+      if (!response.ok) {
+        throw new Error("Falha ao buscar barbeiros")
+      }
+      const data = await response.json()
+      setBarbers(data)
+    } catch (error) {
+      console.error("Erro ao buscar barbeiros:", error)
+      toast.error("Erro ao carregar barbeiros. Por favor, tente novamente.")
+    } finally {
+      setIsLoadingBarbers(false)
+    }
+  }, [barbershop.id])
+
   useEffect(() => {
     if (selectedDay) {
       fetchTimes()
     }
   }, [selectedDay, fetchTimes])
+
+  useEffect(() => {
+    fetchBarbers()
+  }, [fetchBarbers])
 
   const selectedDate = useMemo(() => {
     if (!selectedDay || !selectedTime) return
@@ -103,6 +132,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const handleBookingSheetOpenChange = () => {
     setSelectedDay(undefined)
     setSelectedTime(undefined)
+    setSelectedBarberId(undefined)
     setAvailableTimes([])
     setBookingSheetIsOpen(false)
   }
@@ -118,12 +148,16 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
 
   const handleCreateBooking = async () => {
     try {
-      if (!selectedDate || !session?.user?.id) return
+      if (!selectedDate || !session?.user?.id || !selectedBarberId) {
+        toast.error("Por favor, selecione uma data, hora e barbeiro.")
+        return
+      }
       await createBooking({
         barbershopId: barbershop.id,
         serviceId: service.id,
         date: selectedDate,
         userId: session.user.id,
+        barberId: selectedBarberId,
       })
       handleBookingSheetOpenChange()
       toast.success("Reserva criada com sucesso!", {
@@ -133,8 +167,12 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         },
       })
     } catch (error) {
-      console.error(error)
-      toast.error("Erro ao criar reserva!")
+      console.error("Erro ao criar reserva:", error)
+      if (error instanceof Error) {
+        toast.error(`Erro ao criar reserva: ${error.message}`)
+      } else {
+        toast.error("Erro ao criar reserva. Por favor, tente novamente.")
+      }
     }
   }
 
@@ -216,19 +254,51 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                     </div>
                   )}
 
-                  {selectedDate && (
+                  {selectedDay && selectedTime && (
+                    <div className="border-t border-solid p-5">
+                      <h3 className="mb-3 font-bold">Selecione um barbeiro:</h3>
+                      {isLoadingBarbers ? (
+                        <p>Carregando barbeiros...</p>
+                      ) : barbers.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {barbers.map((barber) => (
+                            <Button
+                              key={barber.id}
+                              variant={
+                                selectedBarberId === barber.id
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className="flex-1"
+                              onClick={() => setSelectedBarberId(barber.id)}
+                            >
+                              {barber.name}
+                            </Button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>Nenhum barbeiro disponível.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedDate && selectedBarberId && (
                     <div className="p-5">
                       <BookingSummary
                         barbershop={barbershop}
                         service={service}
                         selectedDate={selectedDate}
+                        selectedBarberId={selectedBarberId}
+                        barbers={barbers}
                       />
                     </div>
                   )}
                   <SheetFooter className="mt-5 px-5">
                     <Button
                       onClick={handleCreateBooking}
-                      disabled={!selectedDay || !selectedTime}
+                      disabled={
+                        !selectedDay || !selectedTime || !selectedBarberId
+                      }
                     >
                       Confirmar
                     </Button>

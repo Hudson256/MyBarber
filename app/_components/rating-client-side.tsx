@@ -56,9 +56,9 @@ const RatingClientSide: React.FC<RatingClientSideProps> = ({ barbershop }) => {
       <Button variant="outline" onClick={() => setIsModalOpen(true)}>
         Avaliar
       </Button>
-
       {isModalOpen && (
         <RatingModal
+          barbershopId={barbershop.id}
           services={barbershop.services}
           onSubmit={handleRatingSubmit}
           onClose={handleCloseModal}

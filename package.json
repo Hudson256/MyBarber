@@ -11,10 +11,14 @@
     "prepare": "husky && prisma generate",
     "add-default-hours": "npm run clean && npm run compile-scripts && node dist/scripts/add-default-hours.js",
     "compile-scripts": "npm run clean && tsc --project tsconfig.scripts.json",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "seed": "tsx prisma/seed.ts",
+    "add-hours": "tsx scripts/add-default-hours.ts",
+    "build-add-hours": "tsc scripts/add-default-hours.ts --outDir dist --module ES2020",
+    "add-barbers": "tsx scripts/add-default-barbers.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.2",
@@ -23,7 +27,9 @@
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-slot": "^1.1.0",
+    "add": "^2.0.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
@@ -35,12 +41,14 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
     "react-hook-form": "^7.52.2",
+    "select": "^1.1.2",
     "sonner": "^1.5.0",
-    "tailwind-merge": "^2.4.0",
+    "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@shadcn/ui": "^0.0.4",
     "@types/node": "^20.16.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",

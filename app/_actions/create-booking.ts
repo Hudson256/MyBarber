@@ -7,11 +7,12 @@ interface CreateBookingParams {
   barbershopId: string
   serviceId: string
   userId: string
+  barberId: string
   date: Date
 }
 
 export const createBooking = async (params: CreateBookingParams) => {
-  const { barbershopId, serviceId, userId, date } = params
+  const { barbershopId, serviceId, userId, barberId, date } = params
 
   return await db.$transaction(async (tx) => {
     const dayOfWeek = date.getDay()
@@ -33,34 +34,37 @@ export const createBooking = async (params: CreateBookingParams) => {
       throw new Error("Horário não disponível")
     }
 
-    // Verifica se já existe um agendamento para este horário
+    // Verifica se já existe um agendamento para este horário e barbeiro
     const existingBooking = await tx.booking.findFirst({
       where: {
         barbershopId,
+        barberId,
         date,
       },
     })
 
     if (existingBooking) {
-      throw new Error("Este horário já foi reservado")
+      throw new Error("Este horário já foi reservado para este barbeiro")
     }
 
     // Cria o agendamento
     const booking = await tx.booking.create({
       data: {
-        serviceId,
-        userId,
+        service: {
+          connect: { id: serviceId },
+        },
+        user: {
+          connect: { id: userId },
+        },
+        barbershop: {
+          connect: { id: barbershopId },
+        },
+        barber: {
+          connect: { id: barberId },
+        },
         date,
-        barbershopId,
       },
     })
-
-    // Se você precisar atualizar algo na disponibilidade, faça aqui
-    // Por exemplo, se houver um campo para marcar como reservado:
-    // await tx.barbershopAvailability.update({
-    //   where: { id: availability.id },
-    //   data: { /* atualize os campos necessários */ },
-    // })
 
     return booking
   })

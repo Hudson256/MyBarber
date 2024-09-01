@@ -43,10 +43,10 @@ model Account {
 }
 
 model Session {
-  sessionToken String   @unique
+  sessionToken String            @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,27 +74,28 @@ model Barbershop {
   users       BarbershopUser[]
   bookings    Booking[]
   availabilities BarbershopAvailability[]
-  hasDefaultHours Boolean @default(false)
+  hasDefaultHours Boolean         @default(false)
+  barbers      Barber[]
 }
 
 model BarbershopUser {
-  id           String     @id @default(uuid())
+  id           String             @id @default(uuid())
   userId       String
   barbershopId String
-  user         User       @relation(fields: [userId], references: [id])
-  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+  barbershop   Barbershop         @relation(fields: [barbershopId], references: [id])
 
   @@unique([userId, barbershopId])
 }
 
 model BarbershopService {
-  id           String     @id @default(uuid())
+  id           String             @id @default(uuid())
   name         String
   description  String
   imageUrl     String
-  price        Decimal    @db.Decimal(10, 2)
+  price        Decimal            @db.Decimal(10, 2)
   barbershopId String
-  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  barbershop   Barbershop         @relation(fields: [barbershopId], references: [id])
   bookings     Booking[]
   ratings      Rating[]
 }
@@ -108,6 +109,8 @@ model Booking {
   barbershopId  String
   barbershop    Barbershop        @relation(fields: [barbershopId], references: [id])
   date          DateTime
+  barberId      String
+  barber        Barber            @relation(fields: [barberId], references: [id])
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 }
@@ -122,16 +125,31 @@ model Rating {
   message           String?
   userName          String
   userAvatar        String?
+  barberId          String?
+  barber            Barber?           @relation(fields: [barberId], references: [id])
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
 
 model BarbershopAvailability {
-  id           String     @id @default(uuid())
+  id           String                 @id @default(uuid())
   barbershopId String
-  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  barbershop   Barbershop             @relation(fields: [barbershopId], references: [id])
   dayOfWeek    Int        
   time         String     
 
   @@unique([barbershopId, dayOfWeek, time])
+}
+
+model Barber {
+  id           String                 @id @default(uuid())
+  name         String
+  description  String?
+  imageUrl     String?
+  barbershopId String
+  barbershop   Barbershop             @relation(fields: [barbershopId], references: [id])
+  bookings     Booking[]
+  ratings      Rating[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 }

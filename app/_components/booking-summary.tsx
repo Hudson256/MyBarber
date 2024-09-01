@@ -4,9 +4,11 @@ import { Barbershop, BarbershopService } from "@prisma/client"
 import { ptBR } from "date-fns/locale"
 
 interface BookingSummaryProps {
-  service: Pick<BarbershopService, "name" | "price">
-  barbershop: Pick<Barbershop, "name">
+  barbershop: Pick<Barbershop, "id" | "name">
+  service: BarbershopService
   selectedDate: Date
+  selectedBarberId: string
+  barbers: Array<{ id: string; name: string }>
 }
 
 const BookingSummary = ({
