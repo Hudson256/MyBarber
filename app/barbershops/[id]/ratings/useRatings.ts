@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { submitRating } from "./ratings-api"
 
 interface Rating {
   serviceId: string | null
@@ -10,23 +11,7 @@ interface Rating {
   message: string
 }
 
-const submitRating = async (barbershopId: string, rating: Rating) => {
-  const response = await fetch(`/api/barbershops/${barbershopId}/ratings`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(rating),
-  })
-
-  if (!response.ok) {
-    throw new Error("Failed to submit rating")
-  }
-
-  return response.json()
-}
-
-export const useRatings = (barbershopId: string) => {
+export const useSubmitRating = (barbershopId: string) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -44,4 +29,11 @@ export const useRatings = (barbershopId: string) => {
   }
 
   return { handleSubmitRating, loading, error }
+}
+
+// Se você realmente precisa de useServices, defina-o aqui
+// Por exemplo:
+export const useServices = () => {
+  // Implemente a lógica de useServices aqui
+  // ...
 }
