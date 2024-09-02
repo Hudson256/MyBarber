@@ -52,11 +52,6 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     if (!selectedDay) return
     setIsLoading(true)
     try {
-      console.log(
-        "Fetching times for:",
-        barbershop.id,
-        selectedDay.toISOString(),
-      )
       const response = await fetch(
         `/api/barbershop-times?barbershopId=${barbershop.id}&date=${selectedDay.toISOString()}`,
       )
@@ -64,7 +59,6 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         throw new Error("Failed to fetch available times")
       }
       const data = await response.json()
-      console.log("Received data:", data)
 
       const newTimes = Array.isArray(data.availableTimes)
         ? data.availableTimes
@@ -76,7 +70,6 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         return aHours * 60 + aMinutes - (bHours * 60 + bMinutes)
       })
       setAvailableTimes(sortedTimes)
-      console.log("Available times set:", sortedTimes)
     } catch (error) {
       console.error("Erro ao buscar horários disponíveis:", error)
       toast.error(
