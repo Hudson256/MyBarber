@@ -22,9 +22,7 @@ export async function GET(request: NextRequest) {
           lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
         },
       },
-      select: {
-        id: true,
-        date: true,
+      include: {
         user: {
           select: {
             name: true,
@@ -36,7 +34,6 @@ export async function GET(request: NextRequest) {
           },
         },
         barber: {
-          // Adicionado seleção do barbeiro
           select: {
             name: true,
           },
@@ -51,9 +48,10 @@ export async function GET(request: NextRequest) {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      clientName: appointment.user.name || "Cliente não identificado",
-      serviceName: appointment.service.name,
-      barberName: appointment.barber?.name || "Barbeiro não especificado", // Adicionado nome do barbeiro
+      clientName: appointment.user?.name || "Cliente não identificado",
+      phoneNumber: appointment.phoneNumber || "",
+      serviceName: appointment.service?.name || "Serviço não especificado",
+      barberName: appointment.barber?.name || "Barbeiro não especificado",
     }))
 
     return NextResponse.json(formattedAppointments)

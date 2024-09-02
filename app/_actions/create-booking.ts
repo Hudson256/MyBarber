@@ -9,10 +9,12 @@ interface CreateBookingParams {
   userId: string
   barberId: string
   date: Date
+  phoneNumber: string // Adicione esta linha
 }
 
 export const createBooking = async (params: CreateBookingParams) => {
-  const { barbershopId, serviceId, userId, barberId, date } = params
+  const { barbershopId, serviceId, userId, barberId, date, phoneNumber } =
+    params
 
   return await db.$transaction(async (tx) => {
     const dayOfWeek = date.getDay()
@@ -63,6 +65,7 @@ export const createBooking = async (params: CreateBookingParams) => {
           connect: { id: barberId },
         },
         date,
+        phoneNumber,
       },
     })
 

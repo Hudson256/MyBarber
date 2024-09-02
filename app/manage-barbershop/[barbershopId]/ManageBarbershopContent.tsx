@@ -23,6 +23,7 @@ import {
   updateService,
   deleteService,
 } from "@/app/_actions/service-actions"
+import { FaWhatsapp } from "react-icons/fa"
 
 interface Barber {
   id: string
@@ -36,7 +37,8 @@ interface Appointment {
   time: string
   clientName: string
   serviceName: string
-  barberName: string // Adicionado nome do barbeiro
+  barberName: string
+  phoneNumber?: string
 }
 
 interface Service {
@@ -99,6 +101,7 @@ export default function ManageBarbershopContent() {
       )
       if (!response.ok) throw new Error("Falha ao buscar agendamentos")
       const data = await response.json()
+      console.log("Appointments data:", JSON.stringify(data, null, 2))
       setAppointments(data)
     } catch (error) {
       console.error("Erro ao buscar agendamentos:", error)
@@ -296,7 +299,8 @@ export default function ManageBarbershopContent() {
 
   // Função para ordenar agendamentos
   const sortAppointments = (appointments: Appointment[]) => {
-    return appointments.sort((a, b) => {
+    console.log("Before sorting:", appointments)
+    const sorted = appointments.sort((a, b) => {
       const dateA = parseISO(a.date)
       const dateB = parseISO(b.date)
       const [hoursA, minutesA] = a.time.split(":").map(Number)
@@ -307,7 +311,19 @@ export default function ManageBarbershopContent() {
 
       return dateTimeA.getTime() - dateTimeB.getTime()
     })
+    console.log("After sorting:", sorted)
+    return sorted
   }
+
+  const handleWhatsAppClick = (phoneNumber: string) => {
+    const formattedNumber = phoneNumber.replace(/\D/g, "")
+    const whatsappUrl = `https://wa.me/55${formattedNumber}`
+    window.open(whatsappUrl, "_blank")
+  }
+
+  useEffect(() => {
+    console.log("Appointments state updated:", appointments)
+  }, [appointments])
 
   return (
     <>
@@ -399,26 +415,50 @@ export default function ManageBarbershopContent() {
               </h2>
               <div className="space-y-4">
                 {sortAppointments(appointments).map(
-                  (appointment: Appointment) => (
-                    <div
-                      key={appointment.id}
-                      className="rounded-md border border-gray-700 bg-gray-800 p-4 shadow-sm"
-                    >
-                      <p className="font-semibold text-gray-200">
-                        {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
-                        {appointment.time}
-                      </p>
-                      <p className="text-gray-300">
-                        Cliente: {appointment.clientName}
-                      </p>
-                      <p className="text-gray-300">
-                        Serviço: {appointment.serviceName}
-                      </p>
-                      <p className="text-gray-300">
-                        Barbeiro: {appointment.barberName}
-                      </p>
-                    </div>
-                  ),
+                  (appointment: Appointment) => {
+                    console.log("Rendering appointment:", appointment)
+                    return (
+                      <div
+                        key={appointment.id}
+                        className="rounded-md border border-gray-700 bg-gray-800 p-4 shadow-sm"
+                      >
+                        <p className="font-semibold text-gray-200">
+                          {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
+                          {appointment.time}
+                        </p>
+                        <p className="text-gray-300">
+                          Cliente: {appointment.clientName}
+                        </p>
+                        {appointment.phoneNumber ? (
+                          <div className="flex items-center space-x-2">
+                            <p className="text-gray-300">
+                              Telefone: {appointment.phoneNumber}
+                            </p>
+                            <button
+                              onClick={() =>
+                                handleWhatsAppClick(appointment.phoneNumber!)
+                              }
+                              className="text-green-500 hover:text-green-600"
+                              title="Abrir WhatsApp"
+                            >
+                              <FaWhatsapp size={20} />
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-gray-300">
+                            Telefone não disponível (phoneNumber:{" "}
+                            {JSON.stringify(appointment.phoneNumber)})
+                          </p>
+                        )}
+                        <p className="text-gray-300">
+                          Serviço: {appointment.serviceName}
+                        </p>
+                        <p className="text-gray-300">
+                          Barbeiro: {appointment.barberName}
+                        </p>
+                      </div>
+                    )
+                  },
                 )}
               </div>
             </div>

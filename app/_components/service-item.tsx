@@ -46,6 +46,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     [],
   )
   const [isLoadingBarbers, setIsLoadingBarbers] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState("")
 
   const fetchTimes = useCallback(async () => {
     if (!selectedDay) return
@@ -133,6 +134,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     setSelectedDay(undefined)
     setSelectedTime(undefined)
     setSelectedBarberId(undefined)
+    setPhoneNumber("")
     setAvailableTimes([])
     setBookingSheetIsOpen(false)
   }
@@ -148,8 +150,13 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
 
   const handleCreateBooking = async () => {
     try {
-      if (!selectedDate || !session?.user?.id || !selectedBarberId) {
-        toast.error("Por favor, selecione uma data, hora e barbeiro.")
+      if (
+        !selectedDate ||
+        !session?.user?.id ||
+        !selectedBarberId ||
+        !phoneNumber
+      ) {
+        toast.error("Por favor, preencha todos os campos necessários.")
         return
       }
       await createBooking({
@@ -158,6 +165,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
         date: selectedDate,
         userId: session.user.id,
         barberId: selectedBarberId,
+        phoneNumber: phoneNumber,
       })
       handleBookingSheetOpenChange()
       toast.success("Reserva criada com sucesso!", {
@@ -290,13 +298,32 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                         selectedDate={selectedDate}
                         selectedBarberId={selectedBarberId}
                       />
+                      <div className="mt-4">
+                        <label
+                          htmlFor="phoneNumber"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Número de telefone
+                        </label>
+                        <input
+                          type="tel"
+                          id="phoneNumber"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                          placeholder="(00) 00000-0000"
+                        />
+                      </div>
                     </div>
                   )}
                   <SheetFooter className="mt-5 px-5">
                     <Button
                       onClick={handleCreateBooking}
                       disabled={
-                        !selectedDay || !selectedTime || !selectedBarberId
+                        !selectedDay ||
+                        !selectedTime ||
+                        !selectedBarberId ||
+                        !phoneNumber
                       }
                     >
                       Confirmar
