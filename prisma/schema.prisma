@@ -111,6 +111,7 @@ model Booking {
   date          DateTime
   barberId      String
   barber        Barber            @relation(fields: [barberId], references: [id])
+  phoneNumber   String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 }
