@@ -48,15 +48,23 @@ export async function POST(req: Request) {
       throw new Error("Falha ao enviar e-mail: Nenhum dado retornado")
     }
 
-    // Armazenar o messageId para rastreamento
-    await db.emailLog.create({
-      data: {
-        type: "sent",
-        to: "hudsono256@gmail.com",
-        subject: "Nova solicitação de barbearia",
-        messageId: data.id,
-      },
-    })
+    console.log("E-mail enviado com sucesso. ID:", data.id)
+
+    try {
+      // Armazenar o messageId para rastreamento
+      await db.emailLog.create({
+        data: {
+          type: "sent",
+          to: "hudsono256@gmail.com",
+          subject: "Nova solicitação de barbearia",
+          messageId: data.id,
+        },
+      })
+      console.log("Log de e-mail criado com sucesso")
+    } catch (dbError) {
+      console.error("Erro ao criar log de e-mail:", dbError)
+      // Não lançamos o erro aqui para não interromper o fluxo principal
+    }
 
     return NextResponse.json({
       message: "E-mail enviado com sucesso",
@@ -71,7 +79,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "Erro ao processar a solicitação",
-        details: (error as Error).message,
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     )
