@@ -8,18 +8,6 @@ export async function POST(req: Request) {
     const { name, email, phone, joinPlatform, requestWebsite } =
       await req.json()
 
-    console.log("Dados recebidos:", {
-      name,
-      email,
-      phone,
-      joinPlatform,
-      requestWebsite,
-    })
-    console.log(
-      "RESEND_API_KEY:",
-      process.env.RESEND_API_KEY ? "Configurada" : "Não configurada",
-    )
-
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY não está configurada")
     }
@@ -39,7 +27,6 @@ export async function POST(req: Request) {
     })
 
     if (error) {
-      console.error("Erro detalhado do Resend:", error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
@@ -47,21 +34,11 @@ export async function POST(req: Request) {
       throw new Error("Falha ao enviar e-mail: Nenhum dado retornado")
     }
 
-    console.log("E-mail enviado com sucesso. ID:", data.id)
-
-    // Temporarily remove email logging
-    // TODO: Set up EmailLog table in the database schema
-
     return NextResponse.json({
       message: "E-mail enviado com sucesso",
       messageId: data.id,
     })
   } catch (error) {
-    console.error("Erro detalhado ao processar a solicitação:", error)
-    if (error instanceof Error) {
-      console.error("Mensagem de erro:", error.message)
-      console.error("Stack trace:", error.stack)
-    }
     return NextResponse.json(
       {
         error: "Erro ao processar a solicitação",
