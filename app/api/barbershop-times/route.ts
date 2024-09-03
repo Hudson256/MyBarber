@@ -4,57 +4,51 @@ import { db } from "../../_lib/prisma"
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const barbershopId = searchParams.get("barbershopId")
-  const date = searchParams.get("date")
+  const dateString = searchParams.get("date")
+  const barberId = searchParams.get("barberId")
 
-  if (!barbershopId || !date) {
+  if (!barbershopId || !dateString || !barberId) {
     return NextResponse.json(
-      { error: "Missing barbershopId or date" },
+      { error: "Missing required parameters" },
       { status: 400 },
     )
   }
 
-  try {
-    const dayOfWeek = new Date(date).getDay()
+  const date = new Date(dateString)
+  const dayOfWeek = date.getDay()
 
-    // Buscar todos os horários disponíveis para o dia da semana
-    const availableTimes = await db.barbershopAvailability.findMany({
+  try {
+    const availabilities = await db.barbershopAvailability.findMany({
       where: {
-        barbershopId,
-        dayOfWeek,
+        barbershopId: barbershopId,
+        dayOfWeek: dayOfWeek,
       },
-      select: { time: true },
     })
 
-    // Buscar agendamentos existentes para a data específica
     const bookings = await db.booking.findMany({
       where: {
-        barbershopId,
+        barbershopId: barbershopId,
+        barberId: barberId,
         date: {
-          gte: new Date(date),
-          lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
+          gte: new Date(date.setHours(0, 0, 0, 0)),
+          lt: new Date(date.setHours(23, 59, 59, 999)),
         },
       },
-      select: { date: true },
     })
 
-    // Converter os horários de agendamentos para o formato de string (HH:mm)
     const bookedTimes = bookings.map((booking) =>
-      booking.date.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      booking.date.toTimeString().slice(0, 5),
     )
 
-    // Filtrar os horários disponíveis, removendo os já agendados
-    const availableTimesFiltered = availableTimes
-      .map((t) => t.time)
+    const availableTimes = availabilities
+      .map((av) => av.time)
       .filter((time) => !bookedTimes.includes(time))
 
-    return NextResponse.json({ availableTimes: availableTimesFiltered })
+    return NextResponse.json({ availableTimes })
   } catch (error) {
-    console.error("Error fetching barbershop times:", error)
+    console.error("Error fetching available times:", error)
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Error fetching available times" },
       { status: 500 },
     )
   }

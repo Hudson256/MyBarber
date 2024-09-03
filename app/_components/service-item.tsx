@@ -49,11 +49,11 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const [phoneNumber, setPhoneNumber] = useState("")
 
   const fetchTimes = useCallback(async () => {
-    if (!selectedDay) return
+    if (!selectedDay || !selectedBarberId) return
     setIsLoading(true)
     try {
       const response = await fetch(
-        `/api/barbershop-times?barbershopId=${barbershop.id}&date=${selectedDay.toISOString()}`,
+        `/api/barbershop-times?barbershopId=${barbershop.id}&date=${selectedDay.toISOString()}&barberId=${selectedBarberId}`,
       )
       if (!response.ok) {
         throw new Error("Failed to fetch available times")
@@ -63,7 +63,6 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
       const newTimes = Array.isArray(data.availableTimes)
         ? data.availableTimes
         : []
-      // Ordenar os horários
       const sortedTimes = newTimes.sort((a: string, b: string) => {
         const [aHours, aMinutes] = a.split(":").map(Number)
         const [bHours, bMinutes] = b.split(":").map(Number)
@@ -78,7 +77,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedDay, barbershop.id])
+  }, [selectedDay, barbershop.id, selectedBarberId])
 
   const fetchBarbers = useCallback(async () => {
     if (!barbershop.id) return
@@ -221,16 +220,49 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   </SheetHeader>
 
                   <div className="border-b border-solid py-5">
-                    <Calendar
-                      mode="single"
-                      locale={ptBR}
-                      selected={selectedDay}
-                      onSelect={handleDateSelect}
-                      fromDate={new Date()}
-                    />
+                    <h3 className="mb-3 font-bold">Selecione um barbeiro:</h3>
+                    {isLoadingBarbers ? (
+                      <p>Carregando barbeiros...</p>
+                    ) : barbers.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {barbers.map((barber) => (
+                          <Button
+                            key={barber.id}
+                            variant={
+                              selectedBarberId === barber.id
+                                ? "default"
+                                : "outline"
+                            }
+                            className="flex-1"
+                            onClick={() => {
+                              setSelectedBarberId(barber.id)
+                              setSelectedDay(undefined)
+                              setSelectedTime(undefined)
+                              setAvailableTimes([])
+                            }}
+                          >
+                            {barber.name}
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>Nenhum barbeiro disponível.</p>
+                    )}
                   </div>
 
-                  {selectedDay && (
+                  {selectedBarberId && (
+                    <div className="border-b border-solid py-5">
+                      <Calendar
+                        mode="single"
+                        locale={ptBR}
+                        selected={selectedDay}
+                        onSelect={handleDateSelect}
+                        fromDate={new Date()}
+                      />
+                    </div>
+                  )}
+
+                  {selectedDay && selectedBarberId && (
                     <div className="min-h-auto flex flex-wrap justify-evenly gap-2 border-b border-solid p-5">
                       {isLoading ? (
                         <p>Carregando horários...</p>
@@ -249,36 +281,8 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                         ))
                       ) : (
                         <p className="text-xs">
-                          Não há horários disponíveis para este dia.
+                          Não há horários disponíveis para este dia e barbeiro.
                         </p>
-                      )}
-                    </div>
-                  )}
-
-                  {selectedDay && selectedTime && (
-                    <div className="border-t border-solid p-5">
-                      <h3 className="mb-3 font-bold">Selecione um barbeiro:</h3>
-                      {isLoadingBarbers ? (
-                        <p>Carregando barbeiros...</p>
-                      ) : barbers.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {barbers.map((barber) => (
-                            <Button
-                              key={barber.id}
-                              variant={
-                                selectedBarberId === barber.id
-                                  ? "default"
-                                  : "outline"
-                              }
-                              className="flex-1"
-                              onClick={() => setSelectedBarberId(barber.id)}
-                            >
-                              {barber.name}
-                            </Button>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>Nenhum barbeiro disponível.</p>
                       )}
                     </div>
                   )}
