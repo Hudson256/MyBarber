@@ -228,16 +228,22 @@ export default function ManageBarbershopContent() {
   }
 
   const handleRemoveBarber = async (barberId: string) => {
+    console.log("Tentando remover barbeiro com ID:", barberId)
     try {
-      const response = await fetch(`/api/barbers/${barberId}`, {
+      const response = await fetch(`/api/barbers?barberId=${barberId}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Falha ao remover barbeiro")
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao remover barbeiro")
+      }
+
       fetchBarbers()
       toast.success("Barbeiro removido com sucesso!")
     } catch (error) {
-      console.error("Erro ao remover barbeiro:", error)
-      toast.error("Erro ao remover barbeiro. Tente novamente.")
+      console.error("Erro detalhado ao remover barbeiro:", error)
+      toast.error(`Erro ao remover barbeiro: ${(error as Error).message}`)
     }
   }
 

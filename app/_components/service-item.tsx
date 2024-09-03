@@ -304,7 +304,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 sm:text-sm"
-                          placeholder="(00) 00000-0000"
+                          placeholder="(01) 12358-1321"
                         />
                       </div>
                     </div>

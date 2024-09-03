@@ -52,3 +52,40 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const barberId = request.nextUrl.searchParams.get("barberId")
+
+  if (!barberId) {
+    return NextResponse.json(
+      { error: "ID do barbeiro é obrigatório" },
+      { status: 400 },
+    )
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.rating.deleteMany({
+        where: { barberId: barberId },
+      })
+
+      await tx.booking.deleteMany({
+        where: { barberId: barberId },
+      })
+
+      await tx.barber.delete({
+        where: { id: barberId },
+      })
+    })
+
+    return NextResponse.json({ message: "Barbeiro removido com sucesso" })
+  } catch (error) {
+    console.error("Erro detalhado ao remover barbeiro:", error)
+    return NextResponse.json(
+      { error: "Erro interno do servidor", details: (error as Error).message },
+      { status: 500 },
+    )
+  } finally {
+    await prisma.$disconnect()
+  }
+}
