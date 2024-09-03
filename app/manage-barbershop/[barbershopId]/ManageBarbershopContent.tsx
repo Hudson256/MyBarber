@@ -228,7 +228,6 @@ export default function ManageBarbershopContent() {
   }
 
   const handleRemoveBarber = async (barberId: string) => {
-    console.log("Tentando remover barbeiro com ID:", barberId)
     try {
       const response = await fetch(`/api/barbers?barberId=${barberId}`, {
         method: "DELETE",
