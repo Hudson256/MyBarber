@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
+import { db } from "@/app/_lib/prisma"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -26,6 +27,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    if (!data) {
+      throw new Error("Falha ao enviar e-mail")
+    }
+
     // Armazenar o messageId para rastreamento
     await db.emailLog.create({
       data: {
@@ -41,6 +46,7 @@ export async function POST(req: Request) {
       messageId: data.id,
     })
   } catch (error) {
+    console.error("Erro ao processar a solicitação:", error)
     return NextResponse.json(
       { error: "Erro ao processar a solicitação" },
       { status: 500 },
