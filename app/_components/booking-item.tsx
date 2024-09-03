@@ -154,16 +154,6 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               />
             </div>
 
-            <div className="mt-4">
-              <h4 className="mb-2 text-sm font-medium text-gray-700">
-                Informações do Cliente
-              </h4>
-              <p className="text-sm">Nome: {booking.clientName}</p>
-              {booking.phoneNumber && (
-                <p className="text-sm">Telefone: {booking.phoneNumber}</p>
-              )}
-            </div>
-
             {barber && (
               <div className="mt-4">
                 <h4 className="mb-2 text-sm font-medium text-gray-700">

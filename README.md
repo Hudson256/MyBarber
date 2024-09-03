@@ -2,7 +2,7 @@
 
 ## Overview
 
-**MyBarber** é uma plataforma web moderna desenvolvida para barbearias, permitindo que estas gerenciem seus horários, vejam agendamentos e interajam com seus clientes de maneira eficiente. 
+**MyBarber** é uma plataforma web moderna desenvolvida para barbearias, permitindo que estas gerenciem seus horários, vejam agendamentos e interajam com seus clientes de maneira eficiente.
 O projeto foi desenvolvido utilizando tecnologias de ponta, proporcionando uma experiência rápida, responsiva e segura tanto para barbearias quanto para clientes.
 
 ## Funcionalidades Principais
@@ -37,18 +37,18 @@ O projeto foi desenvolvido utilizando tecnologias de ponta, proporcionando uma e
 
 ```bash
 MyBarber/
-├── api/                     # Endpoints da API
-├── components/              # Componentes React reutilizáveis
-├── constants/               # Constantes usadas no projeto
-├── data/                    # Scripts para lidar com dados
-├── pages/                   # Páginas da aplicação Next.js
+├── app/                     # Diretório principal da aplicação Next.js
+│   ├── api/                 # Rotas da API
+│   ├── _components/         # Componentes React reutilizáveis
+│   ├── _lib/                # Bibliotecas e utilitários
 │   └── manage-barbershop/   # Página de gerenciamento de barbearias
 ├── public/                  # Arquivos estáticos
 ├── styles/                  # Arquivos de estilo
-├── utils/                   # Funções utilitárias
 └── docker-compose.yml       # Configuração do Docker
 ```
+
 ## Como Rodar o Projeto
+
 ## Requisitos
 
 - Node.js
@@ -62,6 +62,7 @@ MyBarber/
    ```bash
    git clone https://github.com/Hudson256/MyBarber.git
    cd MyBarber```
+
 2. Instale as dependências:
 
 ```bash
@@ -69,6 +70,7 @@ yarn install
 # ou
 npm install
 ```
+
 3. Configure as variáveis de ambiente no arquivo .env, utilizando o exemplo fornecido em .env.example
 
 4. Inicie o Docker:
@@ -76,28 +78,39 @@ npm install
 ```bash
 docker-compose up -d
 ```
-5.Rode as migrações do Prisma:
+
+5. Rode as migrações do Prisma:
+
 ```bash
 npx prisma migrate deploy
 ```
-6.Inicie o servidor de desenvolvimento:
+
+6. Inicie o servidor de desenvolvimento:
+
 ```bash
 yarn dev
 # ou
 npm run dev
 ```
+
 ## Testes
+
 O projeto inclui uma suíte de testes para garantir a estabilidade e a qualidade do código. Para rodar os testes, utilize o comando:
+
 ```bash
 yarn test
 # ou
 npm run test
 ```
+
 ## Contribuições
+
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests. Este projeto segue o padrão de código estabelecido por ESLint e Prettier, então certifique-se de rodar o linter antes de submeter suas alterações.
 
 ## Licença
+
 Este projeto é licenciado sob a licença MIT.
 
 ## Contato
-Se você tiver alguma dúvida ou sugestão, entre em contato pelo e-mail: hudsono256@gmail.com.
+
+Se você tiver alguma dúvida ou sugestão, entre em contato pelo e-mail: <hudsono256@gmail.com>.
