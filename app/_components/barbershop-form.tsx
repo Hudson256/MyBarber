@@ -16,6 +16,14 @@ export default function BarbershopForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      console.log("Dados do formulário:", {
+        name,
+        email,
+        phone,
+        joinPlatform,
+        requestWebsite,
+      })
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -36,9 +44,14 @@ export default function BarbershopForm() {
         setJoinPlatform(false)
         setRequestWebsite(false)
       } else {
-        throw new Error("Falha ao enviar o formulário")
+        const errorData = await response.json()
+        console.error("Erro na resposta:", errorData)
+        throw new Error(
+          `Falha ao enviar o formulário: ${errorData.error || response.statusText}`,
+        )
       }
     } catch (error) {
+      console.error("Erro detalhado:", error)
       toast.error("Erro ao enviar o formulário. Tente novamente.")
     }
   }

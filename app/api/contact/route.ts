@@ -9,6 +9,14 @@ export async function POST(req: Request) {
     const { name, email, phone, joinPlatform, requestWebsite } =
       await req.json()
 
+    console.log("Dados recebidos:", {
+      name,
+      email,
+      phone,
+      joinPlatform,
+      requestWebsite,
+    })
+
     const { data, error } = await resend.emails.send({
       from: "My Barber <contato@mybarber.today>",
       to: "hudsono256@gmail.com",
@@ -24,11 +32,12 @@ export async function POST(req: Request) {
     })
 
     if (error) {
+      console.error("Erro ao enviar e-mail:", error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
     if (!data) {
-      throw new Error("Falha ao enviar e-mail")
+      throw new Error("Falha ao enviar e-mail: Nenhum dado retornado")
     }
 
     // Armazenar o messageId para rastreamento
