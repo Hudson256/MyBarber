@@ -16,6 +16,14 @@ export async function POST(req: Request) {
       joinPlatform,
       requestWebsite,
     })
+    console.log(
+      "RESEND_API_KEY:",
+      process.env.RESEND_API_KEY ? "Configurada" : "Não configurada",
+    )
+
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY não está configurada")
+    }
 
     const { data, error } = await resend.emails.send({
       from: "My Barber <contato@mybarber.today>",
@@ -28,11 +36,11 @@ export async function POST(req: Request) {
         <p><strong>Telefone:</strong> ${phone}</p>
         <p><strong>Quer fazer parte da plataforma:</strong> ${joinPlatform ? "Sim" : "Não"}</p>
         <p><strong>Quer orçamento para site próprio:</strong> ${requestWebsite ? "Sim" : "Não"}</p>
-    `,
+      `,
     })
 
     if (error) {
-      console.error("Erro ao enviar e-mail:", error)
+      console.error("Erro detalhado do Resend:", error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
@@ -55,9 +63,16 @@ export async function POST(req: Request) {
       messageId: data.id,
     })
   } catch (error) {
-    console.error("Erro ao processar a solicitação:", error)
+    console.error("Erro detalhado ao processar a solicitação:", error)
+    if (error instanceof Error) {
+      console.error("Mensagem de erro:", error.message)
+      console.error("Stack trace:", error.stack)
+    }
     return NextResponse.json(
-      { error: "Erro ao processar a solicitação" },
+      {
+        error: "Erro ao processar a solicitação",
+        details: (error as Error).message,
+      },
       { status: 500 },
     )
   }
