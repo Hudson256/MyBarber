@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Card, CardContent } from "./ui/card"
 import { Button } from "./ui/button"
-import { MenuIcon } from "lucide-react"
+import { MenuIcon, Scissors } from "lucide-react"
 import { Sheet, SheetTrigger } from "./ui/sheet"
 import SidebarSheet from "./sidebar-sheet"
 import Link from "next/link"
@@ -14,14 +14,23 @@ const Header = () => {
           <Image alt="MyBarber Logo" src="/logo.png" height={100} width={100} />
         </Link>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button size="icon" variant="outline">
-              <MenuIcon />
+        <div className="flex items-center space-x-2">
+          <Link href="/quero-ser-barbearia">
+            <Button variant="outline" className="hidden sm:flex">
+              <Scissors className="mr-2 h-4 w-4" />
+              Seja um parceiro
             </Button>
-          </SheetTrigger>
-          <SidebarSheet />
-        </Sheet>
+          </Link>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="outline">
+                <MenuIcon />
+              </Button>
+            </SheetTrigger>
+            <SidebarSheet />
+          </Sheet>
+        </div>
       </CardContent>
     </Card>
   )
