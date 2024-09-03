@@ -30,7 +30,7 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog"
 import { deleteBooking } from "../_actions/delete-booking"
 import { toast } from "sonner"
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import BookingSummary from "./booking-summary"
 
 interface BookingItemProps {
@@ -72,6 +72,11 @@ const BookingItem = ({ booking }: BookingItemProps) => {
   const handleSheetOpenChange = (isOpen: boolean) => {
     setIsSheetOpen(isOpen)
   }
+
+  const handleDirectionsClick = useCallback(() => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(barbershop.address)}`
+    window.open(url, "_blank")
+  }, [barbershop.address])
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
@@ -123,6 +128,12 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               fill
               className="rounded-xl object-cover"
             />
+            <Button
+              className="absolute right-2 top-2 z-10"
+              onClick={handleDirectionsClick}
+            >
+              Como chegar
+            </Button>
 
             <Card className="z-50 mx-5 mb-3 w-full rounded-xl">
               <CardContent className="flex items-center gap-3 px-5 py-3">
