@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { db } from "@/app/_lib/prisma"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -50,21 +49,8 @@ export async function POST(req: Request) {
 
     console.log("E-mail enviado com sucesso. ID:", data.id)
 
-    try {
-      // Armazenar o messageId para rastreamento
-      await db.emailLog.create({
-        data: {
-          type: "sent",
-          to: "hudsono256@gmail.com",
-          subject: "Nova solicitação de barbearia",
-          messageId: data.id,
-        },
-      })
-      console.log("Log de e-mail criado com sucesso")
-    } catch (dbError) {
-      console.error("Erro ao criar log de e-mail:", dbError)
-      // Não lançamos o erro aqui para não interromper o fluxo principal
-    }
+    // Temporarily remove email logging
+    // TODO: Set up EmailLog table in the database schema
 
     return NextResponse.json({
       message: "E-mail enviado com sucesso",
