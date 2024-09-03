@@ -1,13 +1,12 @@
 import { signIn } from "next-auth/react"
 import { Button } from "./ui/button"
 import { DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
-import { FaGoogle, FaDiscord, FaGithub, FaLinkedin } from "react-icons/fa"
+import { FaGoogle, FaDiscord, FaFacebook } from "react-icons/fa"
 
 const providers = [
   { name: "google", label: "Google", icon: FaGoogle },
   { name: "discord", label: "Discord", icon: FaDiscord },
-  { name: "github", label: "GitHub", icon: FaGithub },
-  { name: "linkedin", label: "LinkedIn", icon: FaLinkedin },
+  { name: "facebook", label: "Facebook", icon: FaFacebook },
 ]
 
 const SignInDialog = () => {
