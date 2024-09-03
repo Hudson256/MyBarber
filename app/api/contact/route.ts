@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const { name, email, phone, joinPlatform, requestWebsite } =
       await req.json()
 
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: "My Barber <contato@mybarber.today>",
       to: "hudsono256@gmail.com",
       subject: "Nova solicitação de barbearia",
@@ -26,7 +26,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ message: "E-mail enviado com sucesso" })
+    // Armazenar o messageId para rastreamento
+    await db.emailLog.create({
+      data: {
+        type: "sent",
+        to: "hudsono256@gmail.com",
+        subject: "Nova solicitação de barbearia",
+        messageId: data.id,
+      },
+    })
+
+    return NextResponse.json({
+      message: "E-mail enviado com sucesso",
+      messageId: data.id,
+    })
   } catch (error) {
     return NextResponse.json(
       { error: "Erro ao processar a solicitação" },

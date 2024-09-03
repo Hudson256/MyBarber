@@ -154,3 +154,13 @@ model Barber {
   createdAt    DateTime               @default(now())
   updatedAt    DateTime               @updatedAt
 }
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  type      String
+  to        String
+  subject   String
+  messageId String
+  reason    String?
+  createdAt DateTime @default(now())
+}
