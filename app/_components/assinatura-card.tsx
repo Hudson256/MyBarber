@@ -8,10 +8,10 @@ const stripePromise = loadStripe(
 )
 
 export default function AssinaturaCard() {
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubscribe = async () => {
-    setLoading(true)
+    setIsLoading(true)
     try {
       const stripe = await stripePromise
       if (!stripe) throw new Error("Falha ao carregar Stripe")
@@ -38,33 +38,41 @@ export default function AssinaturaCard() {
     } catch (error) {
       console.error("Erro ao iniciar o checkout:", error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-md">
-      <h2 className="mb-4 text-2xl font-bold">Assinatura Mensal</h2>
-      <p className="mb-4">
+    <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+      <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
+        Assinatura Mensal
+      </h2>
+      <p className="mb-4 text-gray-600 dark:text-gray-300">
         Acesse todas as funcionalidades por apenas R$50/mês
       </p>
-      <ul className="mb-6 space-y-2">
+      <ul className="mb-6 space-y-2 text-gray-600 dark:text-gray-300">
+        <li>✅ Sistema de agendamento online</li>
+        <li>✅ Gerenciamento de clientes</li>
+        <li>✅ Controle de estoque</li>
+        <li>✅ Relatórios financeiros</li>
+        <li>✅ Suporte técnico</li>
         <li>✅ 14 dias de teste grátis</li>
-        <li>✅ Cobrança recorrente a cada 30 dias</li>
         <li>✅ Cancele a qualquer momento</li>
       </ul>
-      <p className="mb-4 text-sm text-gray-600">
-        Ao se inscrever, você concorda com nossa cobrança recorrente de R$50 por
-        mês após o período de teste gratuito de 14 dias. Você pode cancelar a
-        qualquer momento.
-      </p>
-      <button
-        onClick={handleSubscribe}
-        disabled={loading}
-        className="w-full rounded bg-blue-600 px-4 py-2 text-white transition duration-300 hover:bg-blue-700 disabled:bg-blue-400"
-      >
-        {loading ? "Processando..." : "Iniciar teste grátis"}
-      </button>
+      <div className="mt-auto">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          Ao se inscrever, você concorda com nossa cobrança recorrente de R$50
+          por mês após o período de teste gratuito de 14 dias. Você pode
+          cancelar a qualquer momento.
+        </p>
+        <button
+          onClick={handleSubscribe}
+          disabled={isLoading}
+          className="w-full rounded bg-blue-600 px-4 py-2 text-white transition duration-300 hover:bg-blue-700 disabled:bg-blue-400"
+        >
+          {isLoading ? "Processando..." : "Iniciar teste grátis"}
+        </button>
+      </div>
     </div>
   )
 }
