@@ -61,21 +61,23 @@ model VerificationToken {
 }
 
 model Barbershop {
-  id          String              @id @default(uuid())
-  name        String
-  address     String
-  phones      String[]
-  description String
-  imageUrl    String
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  services    BarbershopService[]
-  ratings     Rating[]
-  users       BarbershopUser[]
-  bookings    Booking[]
-  availabilities BarbershopAvailability[]
-  hasDefaultHours Boolean         @default(false)
-  barbers      Barber[]
+  id                   String              @id @default(uuid())
+  name                 String
+  address              String
+  phones               String[]
+  description          String
+  imageUrl             String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  services             BarbershopService[]
+  ratings              Rating[]
+  users                BarbershopUser[]
+  bookings             Booking[]
+  availabilities       BarbershopAvailability[]
+  hasDefaultHours      Boolean             @default(false)
+  barbers              Barber[]
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
 }
 
 model BarbershopUser {

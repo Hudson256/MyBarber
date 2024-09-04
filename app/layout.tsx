@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import Footer from "./_components/footer"
 import AuthProvider from "./_providers/auth"
+import "@/app/_lib/logger"
 
 const inter = Inter({ subsets: ["latin"] })
 

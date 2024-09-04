@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
+import { toast } from "sonner"
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -13,30 +14,46 @@ export default function AssinaturaCard() {
   const handleSubscribe = async () => {
     setIsLoading(true)
     try {
-      const stripe = await stripePromise
-      if (!stripe) throw new Error("Falha ao carregar Stripe")
-
+      console.log("Iniciando processo de checkout...")
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: "seu_price_id_do_stripe",
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!,
         }),
       })
 
-      const session = await response.json()
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error(
+          "Resposta do servidor não ok:",
+          response.status,
+          errorData,
+        )
+        throw new Error(`Falha ao criar sessão de checkout: ${errorData.error}`)
+      }
 
-      const result = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      })
+      const { sessionId, barbershopId } = await response.json()
+      console.log("Session ID recebido:", sessionId)
+      console.log("Barbershop ID recebido:", barbershopId)
 
-      if (result.error) {
-        console.error(result.error.message)
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error("Falha ao carregar o serviço de pagamento")
+      }
+
+      const { error } = await stripe.redirectToCheckout({ sessionId })
+      if (error) {
+        console.error("Erro ao redirecionar para o checkout:", error)
+        throw error
       }
     } catch (error) {
-      console.error("Erro ao iniciar o checkout:", error)
+      console.error("Erro detalhado ao iniciar o checkout:", error)
+      toast.error(
+        "Ocorreu um erro ao iniciar o processo de pagamento. Por favor, tente novamente.",
+      )
     } finally {
       setIsLoading(false)
     }
@@ -64,6 +81,11 @@ export default function AssinaturaCard() {
           Ao se inscrever, você concorda com nossa cobrança recorrente de R$50
           por mês após o período de teste gratuito de 14 dias. Você pode
           cancelar a qualquer momento.
+        </p>
+        <p className="mb-4 text-sm text-yellow-600 dark:text-yellow-400">
+          Nota: Se você estiver usando um bloqueador de anúncios, pode ser
+          necessário desativá-lo temporariamente para concluir o processo de
+          assinatura.
         </p>
         <button
           onClick={handleSubscribe}
