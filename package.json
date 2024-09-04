@@ -32,6 +32,7 @@
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@react-google-maps/api": "^2.19.3",
+    "@stripe/stripe-js": "^4.4.0",
     "add": "^2.0.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -48,6 +49,7 @@
     "resend": "^4.0.0",
     "select": "^1.1.2",
     "sonner": "^1.5.0",
+    "stripe": "^16.9.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
