@@ -5,8 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: Request) {
   try {
-    const { name, email, phone, joinPlatform, requestWebsite } =
-      await req.json()
+    const { name, email, phone, message } = await req.json()
 
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY não está configurada")
@@ -15,14 +14,13 @@ export async function POST(req: Request) {
     const { data, error } = await resend.emails.send({
       from: "My Barber <contato@mybarber.today>",
       to: "hudsono256@gmail.com",
-      subject: "Nova solicitação de barbearia",
+      subject: "Nova solicitação de orçamento para site próprio",
       html: `
-        <h1>Nova solicitação de barbearia</h1>
+        <h1>Nova solicitação de orçamento para site próprio</h1>
         <p><strong>Nome:</strong> ${name}</p>
         <p><strong>E-mail:</strong> ${email}</p>
         <p><strong>Telefone:</strong> ${phone}</p>
-        <p><strong>Quer fazer parte da plataforma:</strong> ${joinPlatform ? "Sim" : "Não"}</p>
-        <p><strong>Quer orçamento para site próprio:</strong> ${requestWebsite ? "Sim" : "Não"}</p>
+        <p><strong>Mensagem:</strong> ${message}</p>
       `,
     })
 
@@ -35,7 +33,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: "E-mail enviado com sucesso",
+      message: "Orçamento enviado com sucesso",
       messageId: data.id,
     })
   } catch (error) {

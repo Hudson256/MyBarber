@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export default function OrcamentoCard() {
   const [formData, setFormData] = useState({
@@ -9,7 +10,6 @@ export default function OrcamentoCard() {
     mensagem: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState("")
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -20,38 +20,32 @@ export default function OrcamentoCard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setMessage("")
 
     try {
-      const response = await fetch("/api/send", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Formulário de Orçamento <onboarding@resend.dev>",
-          to: "seu-email@exemplo.com",
-          subject: "Nova solicitação de orçamento",
-          text: `
-                        Nome: ${formData.nome}
-                        Email: ${formData.email}
-                        Telefone: ${formData.telefone}
-                        Mensagem: ${formData.mensagem}
-                    `,
+          name: formData.nome,
+          email: formData.email,
+          phone: formData.telefone,
+          message: formData.mensagem,
         }),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        setMessage("Orçamento solicitado com sucesso!")
+        toast.success(data.message || "Orçamento enviado com sucesso!")
         setFormData({ nome: "", email: "", telefone: "", mensagem: "" })
       } else {
-        setMessage(
-          "Ocorreu um erro ao enviar o orçamento. Por favor, tente novamente.",
-        )
+        throw new Error(data.error || "Falha ao enviar o orçamento")
       }
     } catch (error) {
-      console.error("Erro ao enviar e-mail:", error)
-      setMessage(
+      console.error("Erro ao enviar orçamento:", error)
+      toast.error(
         "Ocorreu um erro ao enviar o orçamento. Por favor, tente novamente.",
       )
     } finally {
@@ -141,13 +135,6 @@ export default function OrcamentoCard() {
           {isLoading ? "Enviando..." : "Solicitar Orçamento"}
         </button>
       </form>
-      {message && (
-        <p
-          className={`mt-4 text-center ${message.includes("sucesso") ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-        >
-          {message}
-        </p>
-      )}
     </div>
   )
 }
