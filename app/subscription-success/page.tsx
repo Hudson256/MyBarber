@@ -6,29 +6,52 @@ import Header from "../_components/header"
 import { Button } from "../_components/ui/button"
 import { useRouter } from "next/navigation"
 
+interface BarbershopInfo {
+  id: string
+  name: string
+  plan: string
+}
+
 export default function SubscriptionSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [barbershopId, setBarbershopId] = useState<string | null>(null)
+  const [barbershopInfo, setBarbershopInfo] = useState<BarbershopInfo | null>(
+    null,
+  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id")
     if (sessionId) {
-      fetch(`/api/get-barbershop-id?session_id=${sessionId}`)
+      fetch(`/api/get-session?session_id=${sessionId}`)
         .then((response) => {
           if (!response.ok) {
-            throw new Error("Falha ao obter o ID da barbearia")
+            throw new Error("Falha ao obter informações da barbearia")
           }
           return response.json()
         })
         .then((data) => {
-          setBarbershopId(data.barbershopId)
+          setBarbershopInfo(data)
+          setIsLoading(false)
         })
         .catch((error) => {
-          console.error("Erro ao buscar o ID da barbearia:", error)
+          console.error("Erro ao buscar informações da barbearia:", error)
+          setError(
+            "Não foi possível carregar as informações da barbearia. Por favor, tente novamente mais tarde.",
+          )
+          setIsLoading(false)
         })
     }
   }, [searchParams])
+
+  if (isLoading) {
+    return <div>Carregando informações da barbearia...</div>
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -41,17 +64,26 @@ export default function SubscriptionSuccessPage() {
           <p className="mb-6 text-center text-xl text-gray-600 dark:text-gray-300">
             Parabéns! Sua barbearia agora faz parte da plataforma My Barber.
           </p>
-          {barbershopId && (
+          {barbershopInfo && (
             <>
               <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
-                ID da sua barbearia:{" "}
-                <span className="font-bold">{barbershopId}</span>
+                Nome da barbearia:{" "}
+                <span className="font-bold">{barbershopInfo.name}</span>
+              </p>
+              <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
+                ID da barbearia:{" "}
+                <span className="font-bold">{barbershopInfo.id}</span>
+              </p>
+              <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
+                Plano assinado:{" "}
+                <span className="font-bold">{barbershopInfo.plan}</span>
               </p>
               <div className="mb-6 rounded-lg bg-yellow-100 p-4 text-yellow-700">
                 <p className="font-bold">Atenção:</p>
                 <p>
-                  Guarde este ID em um local seguro. Você precisará dele para
-                  acessar e gerenciar sua barbearia no futuro.
+                  Guarde o ID da sua barbearia em um local seguro. Você
+                  precisará dele para acessar e gerenciar sua barbearia no
+                  futuro.
                 </p>
               </div>
             </>
@@ -63,8 +95,8 @@ export default function SubscriptionSuccessPage() {
           <div className="flex justify-center">
             <Button
               onClick={() =>
-                barbershopId &&
-                router.push(`/manage-barbershop/${barbershopId}`)
+                barbershopInfo &&
+                router.push(`/manage-barbershop/${barbershopInfo.id}`)
               }
               className="hover:bg-primary-dark bg-primary text-white"
             >
