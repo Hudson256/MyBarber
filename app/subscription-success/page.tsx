@@ -42,10 +42,19 @@ export default function SubscriptionSuccessPage() {
             Parabéns! Sua barbearia agora faz parte da plataforma My Barber.
           </p>
           {barbershopId && (
-            <p className="mb-6 text-center text-lg text-gray-600 dark:text-gray-300">
-              ID da sua barbearia:{" "}
-              <span className="font-bold">{barbershopId}</span>
-            </p>
+            <>
+              <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
+                ID da sua barbearia:{" "}
+                <span className="font-bold">{barbershopId}</span>
+              </p>
+              <div className="mb-6 rounded-lg bg-yellow-100 p-4 text-yellow-700">
+                <p className="font-bold">Atenção:</p>
+                <p>
+                  Guarde este ID em um local seguro. Você precisará dele para
+                  acessar e gerenciar sua barbearia no futuro.
+                </p>
+              </div>
+            </>
           )}
           <p className="mb-8 text-center text-gray-600 dark:text-gray-300">
             Você pode gerenciar sua barbearia e modificar suas informações na
