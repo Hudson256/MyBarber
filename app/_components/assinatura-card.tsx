@@ -3,6 +3,11 @@
 import { useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
 import { toast } from "sonner"
+import { useSession } from "next-auth/react"
+import { Button } from "./ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
+import { LogInIcon } from "lucide-react"
+import SignInDialog from "./sign-in-dialog"
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -10,11 +15,15 @@ const stripePromise = loadStripe(
 
 export default function AssinaturaCard() {
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
 
   const handleSubscribe = async () => {
+    if (!session) {
+      return
+    }
+
     setIsLoading(true)
     try {
-      console.log("Iniciando processo de checkout...")
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -27,17 +36,10 @@ export default function AssinaturaCard() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error(
-          "Resposta do servidor não ok:",
-          response.status,
-          errorData,
-        )
         throw new Error(`Falha ao criar sessão de checkout: ${errorData.error}`)
       }
 
-      const { sessionId, barbershopId } = await response.json()
-      console.log("Session ID recebido:", sessionId)
-      console.log("Barbershop ID recebido:", barbershopId)
+      const { sessionId } = await response.json()
 
       const stripe = await stripePromise
       if (!stripe) {
@@ -46,11 +48,9 @@ export default function AssinaturaCard() {
 
       const { error } = await stripe.redirectToCheckout({ sessionId })
       if (error) {
-        console.error("Erro ao redirecionar para o checkout:", error)
         throw error
       }
     } catch (error) {
-      console.error("Erro detalhado ao iniciar o checkout:", error)
       toast.error(
         "Ocorreu um erro ao iniciar o processo de pagamento. Por favor, tente novamente.",
       )
@@ -87,13 +87,27 @@ export default function AssinaturaCard() {
           necessário desativá-lo temporariamente para concluir o processo de
           assinatura.
         </p>
-        <button
-          onClick={handleSubscribe}
-          disabled={isLoading}
-          className="w-full rounded bg-blue-600 px-4 py-2 text-white transition duration-300 hover:bg-blue-700 disabled:bg-blue-400"
-        >
-          {isLoading ? "Processando..." : "Iniciar teste grátis"}
-        </button>
+        {session ? (
+          <button
+            onClick={handleSubscribe}
+            disabled={isLoading}
+            className="w-full rounded bg-blue-600 px-4 py-2 text-white transition duration-300 hover:bg-blue-700 disabled:bg-blue-400"
+          >
+            {isLoading ? "Processando..." : "Iniciar teste grátis"}
+          </button>
+        ) : (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="w-full" variant="default">
+                <LogInIcon className="mr-2 h-4 w-4" />
+                Faça login para assinar
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[90%]">
+              <SignInDialog />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   )
