@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
-import { db } from "@/app/_lib/prisma"
 import { logger } from "@/app/_lib/logger"
+import { createBarbershop } from "@/app/_actions/create-barbershop"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -17,40 +17,52 @@ export async function POST(req: Request) {
 
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret)
-    logger.log("Webhook event received:", event.type)
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Unknown error"
-    logger.error(`Webhook Error: ${errorMessage}`)
+    const errorMessage =
+      err instanceof Error ? err.message : "Erro desconhecido"
+    logger.error(`Erro no webhook: ${errorMessage}`)
     return NextResponse.json(
-      { error: `Webhook Error: ${errorMessage}` },
+      { error: `Erro no webhook: ${errorMessage}` },
       { status: 400 },
     )
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session
-    logger.log("Checkout session completed:", session.id)
+    logger.log("Sessão de checkout completada:", session.id)
 
     try {
-      // Criar uma nova barbearia
-      const newBarbershop = await db.barbershop.create({
-        data: {
-          name: "Nova Barbearia",
-          address: "Endereço a ser definido",
-          description: "Descrição a ser definida",
-          imageUrl:
-            "https://pixabay.com/get/gc53748efcc4f5ee16c71ded0d36370e61c27cfa97a50adbfd734e553959a71a450ff73641767018b40271af8a1e0a513033355c5c0835cc050a93215ba611551_1280.jpg",
-          phones: [],
-          stripeCustomerId: session.customer as string,
-          stripeSubscriptionId: session.subscription as string,
-          stripeSessionId: session.id,
-        },
+      const newBarbershop = await createBarbershop({
+        name: "Nova Barbearia",
+        address: "Endereço a ser definido",
+        description: "Descrição a ser definida",
+        imageUrl: "https://example.com/default-image.jpg",
+        phones: [],
+        stripeCustomerId: session.customer as string,
+        stripeSubscriptionId: session.subscription as string,
+        stripeSessionId: session.id,
       })
+      logger.log("Barbearia criada com sucesso:", newBarbershop.id)
 
-      logger.log("New barbershop created:", newBarbershop.id)
-      logger.log("Barbershop created successfully with session ID")
+      // Adicione estas linhas aqui
+      await stripe.checkout.sessions.update(session.id, {
+        metadata: { barbershopId: newBarbershop.id },
+      })
+      logger.log("Sessão do Stripe atualizada com o ID da barbearia")
+
+      return NextResponse.json({
+        received: true,
+        barbershopId: newBarbershop.id,
+      })
     } catch (error) {
-      logger.error("Error creating barbershop:", error)
+      logger.error("Erro detalhado ao criar barbearia:", error)
+      return NextResponse.json(
+        {
+          error: "Falha ao criar barbearia",
+          details: (error as Error).message,
+        },
+        { status: 500 },
+      )
     }
   }
 

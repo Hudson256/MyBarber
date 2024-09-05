@@ -9,6 +9,9 @@ interface CreateBarbershopParams {
   phones: string[]
   description: string
   imageUrl: string
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
+  stripeSessionId?: string
 }
 
 export async function createBarbershop(data: CreateBarbershopParams) {
@@ -19,6 +22,9 @@ export async function createBarbershop(data: CreateBarbershopParams) {
       phones: data.phones,
       description: data.description,
       imageUrl: data.imageUrl,
+      stripeCustomerId: data.stripeCustomerId,
+      stripeSubscriptionId: data.stripeSubscriptionId,
+      stripeSessionId: data.stripeSessionId,
     },
   })
 
