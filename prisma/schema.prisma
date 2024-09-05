@@ -78,7 +78,7 @@ model Barbershop {
   barbers              Barber[]
   stripeCustomerId     String?
   stripeSubscriptionId String?
-  stripeSessionId      String?
+  stripeSessionId      String?             @unique
 }
 
 model BarbershopUser {
