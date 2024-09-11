@@ -152,7 +152,7 @@ export default function ManageBarbershopContent() {
 
   const fetchBarbershopInfo = useCallback(async () => {
     if (!barbershopId) return
-
+    setIsLoading(true)
     try {
       const response = await fetch(`/api/barbershops/${barbershopId}`)
       if (!response.ok)
@@ -162,6 +162,8 @@ export default function ManageBarbershopContent() {
     } catch (error) {
       console.error("Erro ao buscar informações da barbearia:", error)
       toast.error("Erro ao carregar informações da barbearia. Tente novamente.")
+    } finally {
+      setIsLoading(false)
     }
   }, [barbershopId])
 
@@ -348,6 +350,10 @@ export default function ManageBarbershopContent() {
     const formattedNumber = phoneNumber.replace(/\D/g, "")
     const whatsappUrl = `https://wa.me/55${formattedNumber}`
     window.open(whatsappUrl, "_blank")
+  }
+
+  if (isLoading) {
+    return <div>Carregando informações da barbearia...</div>
   }
 
   return (
