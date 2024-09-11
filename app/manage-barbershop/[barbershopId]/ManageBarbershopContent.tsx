@@ -24,6 +24,7 @@ import {
   deleteService,
 } from "@/app/_actions/service-actions"
 import { FaWhatsapp } from "react-icons/fa"
+import { EditBarbershopInfo } from "@/app/_components/EditBarbershopInfo"
 
 interface Barber {
   id: string
@@ -49,6 +50,14 @@ interface Service {
   price: number
 }
 
+interface BarbershopInfo {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  address: string
+}
+
 export default function ManageBarbershopContent() {
   const { data: session } = useSession()
   const router = useRouter()
@@ -69,6 +78,9 @@ export default function ManageBarbershopContent() {
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null)
+  const [barbershopInfo, setBarbershopInfo] = useState<BarbershopInfo | null>(
+    null,
+  )
 
   const fetchTimes = useCallback(async () => {
     if (!barbershopId || !selectedDate || !selectedBarberId) return
@@ -138,6 +150,21 @@ export default function ManageBarbershopContent() {
     }
   }, [barbershopId])
 
+  const fetchBarbershopInfo = useCallback(async () => {
+    if (!barbershopId) return
+
+    try {
+      const response = await fetch(`/api/barbershops/${barbershopId}`)
+      if (!response.ok)
+        throw new Error("Falha ao buscar informações da barbearia")
+      const data = await response.json()
+      setBarbershopInfo(data)
+    } catch (error) {
+      console.error("Erro ao buscar informações da barbearia:", error)
+      toast.error("Erro ao carregar informações da barbearia. Tente novamente.")
+    }
+  }, [barbershopId])
+
   useEffect(() => {
     if (!session) {
       router.push("/login")
@@ -160,10 +187,11 @@ export default function ManageBarbershopContent() {
 
   useEffect(() => {
     if (barbershopId) {
+      fetchBarbershopInfo()
       fetchBarbers()
       fetchServices()
     }
-  }, [barbershopId, fetchBarbers, fetchServices])
+  }, [barbershopId, fetchBarbershopInfo, fetchBarbers, fetchServices])
 
   const handleAddTime = async (time: string) => {
     try {
@@ -325,6 +353,12 @@ export default function ManageBarbershopContent() {
   return (
     <>
       <Header />
+      {barbershopInfo && (
+        <EditBarbershopInfo
+          barbershop={barbershopInfo}
+          onUpdate={(updatedInfo) => setBarbershopInfo(updatedInfo)}
+        />
+      )}
       <div className="container mx-auto bg-gray-900 p-5 text-gray-100">
         <h1 className="mb-4 text-2xl font-bold text-primary">
           Gerenciar Barbearia
