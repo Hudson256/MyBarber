@@ -14,6 +14,21 @@ interface CreateBarbershopParams {
   stripeSessionId?: string
 }
 
+async function addDefaultBarbers(barbershopId: string) {
+  const DEFAULT_BARBERS = [
+    { name: "João Silva", description: "Especialista em cortes clássicos" },
+    { name: "Maria Oliveira", description: "Expert em barbas e bigodes" },
+    { name: "Carlos Santos", description: "Mestre em cortes modernos" },
+  ]
+
+  const barbers = DEFAULT_BARBERS.map((barber) => ({
+    ...barber,
+    barbershopId,
+  }))
+
+  await db.barber.createMany({ data: barbers })
+}
+
 export async function createBarbershop(data: CreateBarbershopParams) {
   const barbershop = await db.barbershop.create({
     data: {
@@ -29,6 +44,7 @@ export async function createBarbershop(data: CreateBarbershopParams) {
   })
 
   await addDefaultHours(barbershop.id)
+  await addDefaultBarbers(barbershop.id)
 
   return barbershop
 }
