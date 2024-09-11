@@ -428,48 +428,62 @@ export default function ManageBarbershopContent() {
               <h2 className="mb-4 text-xl font-semibold text-gray-200">
                 Agendamentos
               </h2>
-              <div className="space-y-4">
-                {sortAppointments(appointments).map(
-                  (appointment: Appointment) => (
-                    <div
-                      key={appointment.id}
-                      className="rounded-md border border-gray-700 bg-gray-800 p-4 shadow-sm"
-                    >
-                      <p className="font-semibold text-gray-200">
-                        {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
-                        {appointment.time}
-                      </p>
-                      <p className="text-gray-300">
-                        Cliente: {appointment.clientName}
-                      </p>
-                      {appointment.phoneNumber ? (
-                        <div className="flex items-center space-x-2">
+              {isLoading ? (
+                <p className="text-gray-400">Carregando agendamentos...</p>
+              ) : !selectedDate ? (
+                <p className="text-gray-400">
+                  Selecione uma data para ver os agendamentos.
+                </p>
+              ) : appointments.length === 0 ? (
+                <p className="text-gray-400">
+                  Não há agendamentos para esta data.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {sortAppointments(appointments).map(
+                    (appointment: Appointment) => (
+                      <div
+                        key={appointment.id}
+                        className="rounded-md border border-gray-700 bg-gray-800 p-4 shadow-sm"
+                      >
+                        <p className="font-semibold text-gray-200">
+                          {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
+                          {appointment.time}
+                        </p>
+                        <p className="text-gray-300">
+                          Cliente: {appointment.clientName}
+                        </p>
+                        {appointment.phoneNumber ? (
+                          <div className="flex items-center space-x-2">
+                            <p className="text-gray-300">
+                              Telefone: {appointment.phoneNumber}
+                            </p>
+                            <button
+                              onClick={() =>
+                                handleWhatsAppClick(appointment.phoneNumber!)
+                              }
+                              className="text-green-500 hover:text-green-600"
+                              title="Abrir WhatsApp"
+                            >
+                              <FaWhatsapp size={20} />
+                            </button>
+                          </div>
+                        ) : (
                           <p className="text-gray-300">
-                            Telefone: {appointment.phoneNumber}
+                            Telefone não disponível
                           </p>
-                          <button
-                            onClick={() =>
-                              handleWhatsAppClick(appointment.phoneNumber!)
-                            }
-                            className="text-green-500 hover:text-green-600"
-                            title="Abrir WhatsApp"
-                          >
-                            <FaWhatsapp size={20} />
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="text-gray-300">Telefone não disponível</p>
-                      )}
-                      <p className="text-gray-300">
-                        Serviço: {appointment.serviceName}
-                      </p>
-                      <p className="text-gray-300">
-                        Barbeiro: {appointment.barberName}
-                      </p>
-                    </div>
-                  ),
-                )}
-              </div>
+                        )}
+                        <p className="text-gray-300">
+                          Serviço: {appointment.serviceName}
+                        </p>
+                        <p className="text-gray-300">
+                          Barbeiro: {appointment.barberName}
+                        </p>
+                      </div>
+                    ),
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-8">
