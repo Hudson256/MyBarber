@@ -2,7 +2,7 @@ import { db } from "../_lib/prisma"
 import { DEFAULT_HOURS } from "../_constants/constants"
 
 export async function addDefaultHours(barbershopId: string) {
-  const daysOfWeek = [0, 1, 2, 3, 4, 5, 6] // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+  const daysOfWeek = [0, 1, 2, 3, 4, 5, 6]
 
   const defaultAvailabilities = daysOfWeek.flatMap((dayOfWeek) =>
     DEFAULT_HOURS.map((time) => ({

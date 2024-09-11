@@ -68,13 +68,15 @@ export default function ManageBarbershopContent() {
   })
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null)
 
   const fetchTimes = useCallback(async () => {
-    if (!barbershopId || !selectedDate) return
+    if (!barbershopId || !selectedDate || !selectedBarberId) return
 
     try {
+      const formattedDate = selectedDate.toISOString().split("T")[0] // Formato YYYY-MM-DD
       const response = await fetch(
-        `/api/barbershop-times?barbershopId=${barbershopId}&date=${selectedDate.toISOString()}`,
+        `/api/barbershop-times?barbershopId=${barbershopId}&date=${formattedDate}&barberId=${selectedBarberId}`,
       )
       if (!response.ok) throw new Error("Falha ao buscar horários")
       const data = await response.json()
@@ -87,7 +89,7 @@ export default function ManageBarbershopContent() {
       console.error("Erro ao buscar horários:", error)
       toast.error("Erro ao carregar horários. Tente novamente.")
     }
-  }, [barbershopId, selectedDate])
+  }, [barbershopId, selectedDate, selectedBarberId])
 
   const fetchAppointments = useCallback(async () => {
     if (!barbershopId || !selectedDate) return
@@ -142,7 +144,7 @@ export default function ManageBarbershopContent() {
       return
     }
 
-    if (barbershopId && selectedDate) {
+    if (barbershopId && selectedDate && selectedBarberId) {
       fetchTimes()
       fetchAppointments()
     }
@@ -150,6 +152,7 @@ export default function ManageBarbershopContent() {
     session,
     barbershopId,
     selectedDate,
+    selectedBarberId,
     router,
     fetchTimes,
     fetchAppointments,
@@ -169,6 +172,7 @@ export default function ManageBarbershopContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           barbershopId,
+          barberId: selectedBarberId,
           dayOfWeek: selectedDate?.getDay(),
           time,
         }),
@@ -189,6 +193,7 @@ export default function ManageBarbershopContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           barbershopId,
+          barberId: selectedBarberId,
           dayOfWeek: selectedDate?.getDay(),
           time,
         }),
@@ -332,74 +337,92 @@ export default function ManageBarbershopContent() {
         ) : (
           <>
             <div className="flex flex-col gap-4 md:flex-row">
-              <div className="w-full md:w-1/2">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-md border border-gray-700 bg-gray-800"
-                  locale={ptBR}
-                />
+              <div className="w-full md:w-1/3">
+                <h2 className="mb-2 text-xl font-semibold text-gray-200">
+                  Selecione um barbeiro
+                </h2>
+                <select
+                  value={selectedBarberId || ""}
+                  onChange={(e) => setSelectedBarberId(e.target.value)}
+                  className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-100"
+                >
+                  <option value="">Selecione um barbeiro</option>
+                  {barbers.map((barber) => (
+                    <option key={barber.id} value={barber.id}>
+                      {barber.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="w-full md:w-1/2">
-                {selectedDate && (
-                  <div>
-                    <h2 className="mb-2 text-xl font-semibold text-gray-200">
-                      Horários para{" "}
-                      {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
-                    </h2>
-                    <div className="mb-4 grid grid-cols-3 gap-2">
-                      {sortTimes(availableTimes).map((time) => (
-                        <Button
-                          key={time}
-                          variant="outline"
-                          className="group relative bg-gray-800 text-sm text-gray-300 transition-colors hover:bg-red-900 hover:text-gray-100"
-                          onClick={() => handleRemoveTime(time)}
-                        >
-                          {time}
-                          <span className="ml-2 font-bold text-red-500">×</span>
-                          <span className="absolute inset-0 flex items-center justify-center bg-red-800 text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
-                            Remover
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="hover:bg-primary-dark w-full bg-primary text-gray-900">
-                          Adicionar Novo Horário
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-gray-800 text-gray-100 sm:max-w-[425px]">
-                        <DialogTitle className="text-primary">
-                          Adicionar Novo Horário
-                        </DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                          Selecione um horário para adicionar à disponibilidade
-                          da barbearia.
-                        </DialogDescription>
-                        <div className="grid gap-4 py-4">
-                          <input
-                            type="time"
-                            value={newTime}
-                            onChange={(e) => setNewTime(e.target.value)}
-                            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100"
-                          />
-                          <Button
-                            onClick={handleNewTimeAdd}
-                            className="hover:bg-primary-dark bg-primary text-gray-900"
-                          >
-                            Adicionar
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
-              </div>
+              {selectedBarberId && (
+                <div className="w-full md:w-2/3">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border border-gray-700 bg-gray-800"
+                    locale={ptBR}
+                  />
+                </div>
+              )}
             </div>
+
+            {selectedBarberId && selectedDate && (
+              <div className="mt-4">
+                <h2 className="mb-2 text-xl font-semibold text-gray-200">
+                  Horários para{" "}
+                  {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+                </h2>
+                <div className="mb-4 grid grid-cols-3 gap-2">
+                  {sortTimes(availableTimes).map((time) => (
+                    <Button
+                      key={time}
+                      variant="outline"
+                      className="group relative bg-gray-800 text-sm text-gray-300 transition-colors hover:bg-red-900 hover:text-gray-100"
+                      onClick={() => handleRemoveTime(time)}
+                    >
+                      {time}
+                      <span className="ml-2 font-bold text-red-500">×</span>
+                      <span className="absolute inset-0 flex items-center justify-center bg-red-800 text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
+                        Remover
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="hover:bg-primary-dark w-full bg-primary text-gray-900">
+                      Adicionar Novo Horário
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-800 text-gray-100 sm:max-w-[425px]">
+                    <DialogTitle className="text-primary">
+                      Adicionar Novo Horário
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-400">
+                      Selecione um horário para adicionar à disponibilidade do
+                      barbeiro.
+                    </DialogDescription>
+                    <div className="grid gap-4 py-4">
+                      <input
+                        type="time"
+                        value={newTime}
+                        onChange={(e) => setNewTime(e.target.value)}
+                        className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100"
+                      />
+                      <Button
+                        onClick={handleNewTimeAdd}
+                        className="hover:bg-primary-dark bg-primary text-gray-900"
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
 
             <div className="mt-8">
               <h2 className="mb-4 text-xl font-semibold text-gray-200">

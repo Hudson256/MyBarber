@@ -1,4 +1,4 @@
-export var DEFAULT_HOURS = [
+export const DEFAULT_HOURS = [
     "08:00",
     "08:30",
     "09:00",

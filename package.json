@@ -15,7 +15,8 @@
     "seed": "tsx prisma/seed.ts",
     "add-hours": "tsx scripts/add-default-hours.ts",
     "build-add-hours": "tsc scripts/add-default-hours.ts --outDir dist --module ES2020",
-    "add-barbers": "tsx scripts/add-default-barbers.ts"
+    "add-barbers": "tsx scripts/add-default-barbers.ts",
+    "clean-db": "tsx prisma/clean.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
