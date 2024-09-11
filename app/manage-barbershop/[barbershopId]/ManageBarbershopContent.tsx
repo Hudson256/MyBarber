@@ -24,7 +24,7 @@ import {
   deleteService,
 } from "@/app/_actions/service-actions"
 import { FaWhatsapp } from "react-icons/fa"
-import { EditBarbershopInfo } from "@/app/_components/EditBarbershopInfo"
+import { EditBarbershopInfo } from "@/app/_components/editBarbershopInfo"
 
 interface Barber {
   id: string

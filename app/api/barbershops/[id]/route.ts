@@ -46,3 +46,31 @@ export async function PUT(
     )
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
+  const barbershopId = params.id
+
+  try {
+    const barbershop = await db.barbershop.findUnique({
+      where: { id: barbershopId },
+    })
+
+    if (!barbershop) {
+      return NextResponse.json(
+        { error: "Barbearia não encontrada" },
+        { status: 404 },
+      )
+    }
+
+    return NextResponse.json(barbershop)
+  } catch (error) {
+    console.error("Erro ao buscar barbearia:", error)
+    return NextResponse.json(
+      { error: "Erro ao buscar barbearia" },
+      { status: 500 },
+    )
+  }
+}
