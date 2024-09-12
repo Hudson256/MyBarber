@@ -19,18 +19,17 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret)
   } catch (err: unknown) {
-    const errorMessage =
-      err instanceof Error ? err.message : "Erro desconhecido"
-    logger.error(`Erro no webhook: ${errorMessage}`)
+    const errorMessage = err instanceof Error ? err.message : "Unknown error"
+    logger.error(`Webhook error: ${errorMessage}`)
     return NextResponse.json(
-      { error: `Erro no webhook: ${errorMessage}` },
+      { error: `Webhook error: ${errorMessage}` },
       { status: 400 },
     )
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session
-    logger.log("Sessão de checkout completada:", session.id)
+    logger.log("Checkout session completed:", session.id)
 
     try {
       const newBarbershop = await createBarbershop({
@@ -43,43 +42,42 @@ export async function POST(req: Request) {
         stripeSubscriptionId: session.subscription as string,
         stripeSessionId: session.id,
       })
-      logger.log("Barbearia criada com sucesso:", newBarbershop.id)
+      logger.log("Barbershop created successfully:", newBarbershop.id)
+
+      // Create BarbershopUser
+      const userEmail = session.customer_details?.email
+      if (userEmail) {
+        const user = await db.user.findUnique({
+          where: { email: userEmail },
+        })
+
+        if (user) {
+          await db.barbershopUser.create({
+            data: {
+              userId: user.id,
+              barbershopId: newBarbershop.id,
+            },
+          })
+          logger.log("BarbershopUser created successfully")
+        } else {
+          logger.error("User not found for creating BarbershopUser")
+        }
+      }
+
       await stripe.checkout.sessions.update(session.id, {
         metadata: { barbershopId: newBarbershop.id },
       })
-      logger.log("Sessão do Stripe atualizada com o ID da barbearia")
-
-      // Cria o BarbershopUser
-      const user = session.customer_details?.email
-        ? await db.user.findUnique({
-            where: { email: session.customer_details.email },
-          })
-        : null
-
-      if (user) {
-        await db.barbershopUser.create({
-          data: {
-            userId: user.id,
-            barbershopId: newBarbershop.id,
-          },
-        })
-        logger.log("BarbershopUser criado com sucesso")
-      } else {
-        logger.error("Usuário não encontrado para criar BarbershopUser")
-      }
+      logger.log("Stripe session updated with barbershop ID")
 
       return NextResponse.json({
         received: true,
         barbershopId: newBarbershop.id,
       })
     } catch (error) {
-      logger.error(
-        "Erro detalhado ao criar barbearia ou BarbershopUser:",
-        error,
-      )
+      logger.error("Error creating barbershop or BarbershopUser:", error)
       return NextResponse.json(
         {
-          error: "Falha ao criar barbearia ou BarbershopUser",
+          error: "Failed to create barbershop or BarbershopUser",
           details: (error as Error).message,
         },
         { status: 500 },
