@@ -27,13 +27,16 @@ export async function GET(request: Request) {
       expand: ["subscription"],
     })
     logger.log("Stripe session retrieved successfully")
+
     const barbershop = await prisma.barbershop.findUnique({
       where: { stripeSessionId: sessionId },
       select: { id: true, name: true },
     })
+
     if (!barbershop) {
       throw new Error("Barbearia não encontrada")
     }
+
     const subscription = session.subscription as Stripe.Subscription
     const plan = subscription?.items?.data[0]?.price.nickname || "Plano padrão"
     return NextResponse.json({
