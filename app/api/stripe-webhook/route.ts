@@ -32,19 +32,23 @@ export async function POST(req: Request) {
     logger.log("Checkout session completed:", session.id)
 
     try {
+      const customer = await stripe.customers.create({
+        name: session.customer_details?.name || "Cliente Desconhecido",
+        email: session.customer_details?.email || undefined,
+      })
+
       const newBarbershop = await createBarbershop({
         name: "Nova Barbearia",
         address: "Endereço a ser definido",
         description: "Descrição a ser definida",
         imageUrl: "https://example.com/default-image.jpg",
         phones: [],
-        stripeCustomerId: session.customer as string,
-        stripeSubscriptionId: session.subscription as string, // Certifique-se de que isso é o subscriptionId
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: session.subscription as string,
         stripeSessionId: session.id,
       })
       logger.log("Barbershop created successfully:", newBarbershop.id)
 
-      // Create BarbershopUser
       const userEmail = session.customer_details?.email
       if (userEmail) {
         const user = await db.user.findUnique({
@@ -84,8 +88,11 @@ export async function POST(req: Request) {
       )
     }
   }
+
   if (event.type === "customer.subscription.created") {
+    // Lógica para quando uma assinatura é criada
   }
+
   if (event.type === "customer.subscription.trial_will_end") {
     const subscription = event.data.object as Stripe.Subscription
     logger.log("Trial period is ending for subscription:", subscription.id)
@@ -95,5 +102,6 @@ export async function POST(req: Request) {
       logger.log(`Notifying user at ${userEmail} about trial ending.`)
     }
   }
+
   return NextResponse.json({ received: true })
 }
