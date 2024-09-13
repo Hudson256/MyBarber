@@ -10,6 +10,7 @@ export async function POST(request: Request) {
   try {
     const { priceId, customerEmail } = await request.json()
     logger.log("Received priceId:", priceId)
+    logger.log("Received customerEmail:", customerEmail)
 
     if (!priceId || !customerEmail) {
       logger.error("Price ID or Customer Email is missing")

@@ -19,7 +19,8 @@ export default function AssinaturaCard() {
   const { data: session } = useSession()
 
   const handleSubscribe = async () => {
-    if (!session) {
+    if (!session || !session.user.email) {
+      toast.error("Você precisa estar logado para assinar.")
       return
     }
 
@@ -61,7 +62,6 @@ export default function AssinaturaCard() {
     }
   }
 
-  // Aqui você pode usar o subscriptionId conforme necessário
   console.log("Subscription ID:", subscriptionId)
 
   return (
