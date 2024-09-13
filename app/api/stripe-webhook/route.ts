@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         imageUrl: "https://example.com/default-image.jpg",
         phones: [],
         stripeCustomerId: session.customer as string,
-        stripeSubscriptionId: session.subscription as string,
+        stripeSubscriptionId: session.subscription as string, // Certifique-se de que isso é o subscriptionId
         stripeSessionId: session.id,
       })
       logger.log("Barbershop created successfully:", newBarbershop.id)
@@ -84,6 +84,16 @@ export async function POST(req: Request) {
       )
     }
   }
+  if (event.type === "customer.subscription.created") {
+  }
+  if (event.type === "customer.subscription.trial_will_end") {
+    const subscription = event.data.object as Stripe.Subscription
+    logger.log("Trial period is ending for subscription:", subscription.id)
 
+    const userEmail = subscription.metadata.userEmail
+    if (userEmail) {
+      logger.log(`Notifying user at ${userEmail} about trial ending.`)
+    }
+  }
   return NextResponse.json({ received: true })
 }

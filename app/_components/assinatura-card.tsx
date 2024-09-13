@@ -15,6 +15,7 @@ const stripePromise = loadStripe(
 
 export default function AssinaturaCard() {
   const [isLoading, setIsLoading] = useState(false)
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null)
   const { data: session } = useSession()
 
   const handleSubscribe = async () => {
@@ -31,6 +32,7 @@ export default function AssinaturaCard() {
         },
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!,
+          customerId: session.user.id,
         }),
       })
 
@@ -39,17 +41,17 @@ export default function AssinaturaCard() {
         throw new Error(`Falha ao criar sessão de checkout: ${errorData.error}`)
       }
 
-      const { sessionId } = await response.json()
+      const { subscriptionId: newSubscriptionId } = await response.json()
+      setSubscriptionId(newSubscriptionId)
 
       const stripe = await stripePromise
       if (!stripe) {
         throw new Error("Falha ao carregar o serviço de pagamento")
       }
 
-      const { error } = await stripe.redirectToCheckout({ sessionId })
-      if (error) {
-        throw error
-      }
+      toast.success(
+        "Assinatura criada com sucesso! Você está em um período de teste gratuito de 14 dias.",
+      )
     } catch (error) {
       toast.error(
         "Ocorreu um erro ao iniciar o processo de pagamento. Por favor, tente novamente.",
@@ -58,6 +60,9 @@ export default function AssinaturaCard() {
       setIsLoading(false)
     }
   }
+
+  // Aqui você pode usar o subscriptionId conforme necessário
+  console.log("Subscription ID:", subscriptionId)
 
   return (
     <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">

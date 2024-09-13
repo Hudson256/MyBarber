@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { db } from "@/app/_lib/prisma"
 import Iron from "@hapi/iron"
+import { sendEmail } from "@/app/_lib/sendEmail"
 
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET
 
@@ -13,6 +14,10 @@ async function handleEmailSent(data: any) {
       messageId: data.message_id,
     },
   })
+
+  const subject = "E-mail enviado com sucesso"
+  const text = `Seu e-mail para ${data.to} foi enviado com sucesso.`
+  await sendEmail(data.to, subject, text)
 }
 
 async function handleEmailDelivered(data: any) {
@@ -24,6 +29,10 @@ async function handleEmailDelivered(data: any) {
       messageId: data.message_id,
     },
   })
+
+  const subject = "E-mail entregue"
+  const text = `Seu e-mail para ${data.to} foi entregue com sucesso.`
+  await sendEmail(data.to, subject, text)
 }
 
 async function handleEmailBounced(data: any) {
@@ -36,6 +45,10 @@ async function handleEmailBounced(data: any) {
       reason: data.reason,
     },
   })
+
+  const subject = "E-mail não entregue"
+  const text = `O e-mail para ${data.to} não pôde ser entregue. Motivo: ${data.reason}`
+  await sendEmail(data.to, subject, text)
 }
 
 async function handleEmailComplained(data: any) {
@@ -47,6 +60,10 @@ async function handleEmailComplained(data: any) {
       messageId: data.message_id,
     },
   })
+
+  const subject = "Reclamação recebida"
+  const text = `Recebemos uma reclamação sobre o e-mail enviado para ${data.to}.`
+  await sendEmail(data.to, subject, text)
 }
 
 export async function POST(req: Request) {
@@ -59,7 +76,6 @@ export async function POST(req: Request) {
   const body = await req.text()
 
   try {
-    // Verificar a assinatura
     const { timestamp, token } = JSON.parse(signature)
     const unsealed = await Iron.unseal(token, WEBHOOK_SECRET!, Iron.defaults)
     if (unsealed !== body || Date.now() - timestamp > 300000) {
