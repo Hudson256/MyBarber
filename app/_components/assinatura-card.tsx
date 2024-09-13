@@ -32,7 +32,7 @@ export default function AssinaturaCard() {
         },
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!,
-          customerId: session.user.id,
+          customerEmail: session.user.email,
         }),
       })
 
