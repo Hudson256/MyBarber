@@ -8,15 +8,29 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   try {
-    const { priceId, customerId } = await request.json()
+    const { priceId, customerEmail } = await request.json()
     logger.log("Received priceId:", priceId)
 
-    if (!priceId || !customerId) {
-      logger.error("Price ID or Customer ID is missing")
+    if (!priceId || !customerEmail) {
+      logger.error("Price ID or Customer Email is missing")
       return NextResponse.json(
-        { error: "Price ID and Customer ID are required" },
+        { error: "Price ID and Customer Email are required" },
         { status: 400 },
       )
+    }
+    let customerId: string
+    const customers = await stripe.customers.list({ email: customerEmail })
+
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id
+      logger.log("Using existing customer ID:", customerId)
+    } else {
+      const customer = await stripe.customers.create({
+        email: customerEmail,
+        description: "Customer created for subscription",
+      })
+      customerId = customer.id
+      logger.log("Created new customer ID:", customerId)
     }
 
     logger.log("Creating Stripe subscription...")
