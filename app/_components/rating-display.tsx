@@ -9,7 +9,7 @@ interface Rating {
   serviceId: string
   rating: number
   message: string | null
-  barberName?: string // Adicionado nome do barbeiro
+  barberName?: string
 }
 
 interface RatingDisplayProps {
@@ -35,14 +35,12 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
     return stars
   }
 
-  // Calcular a média das avaliações
   const calculateAverageRating = () => {
     if (ratings.length === 0) return 0
     const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0)
     return (totalRating / ratings.length).toFixed(1) // Mantém uma casa decimal
   }
 
-  // Obter o número total de avaliações
   const totalRatings = ratings.length
 
   return (
@@ -64,7 +62,7 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({ ratings, services }) => {
           >
             <div className="mr-4 flex-shrink-0">
               <img
-                src={rating.userAvatar || "/default-avatar.png"} // Caminho corrigido
+                src={rating.userAvatar || "/default-avatar.png"}
                 alt={`${rating.userName}'s avatar`}
                 className="h-12 w-12 rounded-full object-cover"
                 width={48}
