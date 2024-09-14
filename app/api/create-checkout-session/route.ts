@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       logger.log("Created new customer ID:", customerId)
     }
 
-    logger.log("Creating Stripe subscription...")
+    logger.log("Creating Stripe checkout session...")
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
       subscription_data: {
         trial_end: Math.floor(Date.now() / 1000) + 14 * 24 * 60 * 60,
       },
-      success_url: `${process.env.NEXT_PUBLIC_SUCCESS_URL}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_CANCEL_URL}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/subscription-success`, // URL de sucesso
+      cancel_url: process.env.NEXT_PUBLIC_CANCEL_URL,
     })
 
     logger.log("Stripe checkout session created successfully:", session.id)
