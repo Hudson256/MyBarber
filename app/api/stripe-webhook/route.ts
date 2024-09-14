@@ -14,6 +14,9 @@ export async function POST(req: Request) {
   const body = await req.text()
   const sig = req.headers.get("stripe-signature") as string
 
+  logger.log("Received webhook body:", body) // Log do corpo da requisição
+  logger.log("Received signature:", sig) // Log da assinatura
+
   let event: Stripe.Event
 
   try {
@@ -35,27 +38,48 @@ export async function POST(req: Request) {
     logger.log("Session details:", JSON.stringify(session, null, 2))
 
     try {
-      const customer = await stripe.customers.create({
-        name: session.customer_details?.name || "Cliente Desconhecido",
-        email: session.customer_details?.email || undefined,
-      })
+      const customerEmail = session.customer_details?.email
+      let customerId: string
 
+      // Verifique se o cliente já existe
+      if (customerEmail) {
+        const customers = await stripe.customers.list({ email: customerEmail })
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id
+          logger.log("Using existing customer ID:", customerId)
+        } else {
+          const customer = await stripe.customers.create({
+            name: session.customer_details?.name || "Cliente Desconhecido",
+            email: customerEmail,
+          })
+          customerId = customer.id
+          logger.log("Created new customer ID:", customerId)
+        }
+      } else {
+        logger.error("Customer email is missing")
+        return NextResponse.json(
+          { error: "Customer email is required" },
+          { status: 400 },
+        )
+      }
+
+      // Criação da nova barbearia
       const newBarbershop = await createBarbershop({
         name: "Nova Barbearia",
         address: "Endereço a ser definido",
         description: "Descrição a ser definida",
         imageUrl: "https://example.com/default-image.jpg",
         phones: [],
-        stripeCustomerId: customer.id,
+        stripeCustomerId: customerId,
         stripeSubscriptionId: session.subscription as string,
         stripeSessionId: session.id,
       })
       logger.log("Barbershop created successfully:", newBarbershop.id)
 
-      const userEmail = session.customer_details?.email
-      if (userEmail) {
+      // Associar o usuário à barbearia, se o email do cliente estiver disponível
+      if (customerEmail) {
         const user = await db.user.findUnique({
-          where: { email: userEmail },
+          where: { email: customerEmail },
         })
 
         if (user) {
@@ -71,6 +95,7 @@ export async function POST(req: Request) {
         }
       }
 
+      // Atualiza a sessão do Stripe com o ID da nova barbearia
       await stripe.checkout.sessions.update(session.id, {
         metadata: { barbershopId: newBarbershop.id },
       })
