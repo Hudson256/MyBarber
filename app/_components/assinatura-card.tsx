@@ -42,13 +42,15 @@ export default function AssinaturaCard() {
         throw new Error(`Falha ao criar sessão de checkout: ${errorData.error}`)
       }
 
-      const { subscriptionId: newSubscriptionId } = await response.json()
-      setSubscriptionId(newSubscriptionId)
+      const { subscriptionId, checkoutUrl } = await response.json()
+      setSubscriptionId(subscriptionId)
 
       const stripe = await stripePromise
       if (!stripe) {
         throw new Error("Falha ao carregar o serviço de pagamento")
       }
+
+      window.location.href = checkoutUrl
 
       toast.success(
         "Assinatura criada com sucesso! Você está em um período de teste gratuito de 14 dias.",

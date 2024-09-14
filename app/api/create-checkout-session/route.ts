@@ -11,7 +11,6 @@ export async function POST(request: Request) {
     const { priceId, customerEmail } = await request.json()
     logger.log("Received priceId:", priceId)
     logger.log("Received customerEmail:", customerEmail)
-
     if (!priceId || !customerEmail) {
       logger.error("Price ID or Customer Email is missing")
       return NextResponse.json(
@@ -19,6 +18,7 @@ export async function POST(request: Request) {
         { status: 400 },
       )
     }
+
     let customerId: string
     const customers = await stripe.customers.list({ email: customerEmail })
 
@@ -35,22 +35,28 @@ export async function POST(request: Request) {
     }
 
     logger.log("Creating Stripe subscription...")
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      trial_period_days: 14,
-      metadata: {
-        priceId: priceId,
+      mode: "subscription",
+      subscription_data: {
+        trial_end: Math.floor(Date.now() / 1000) + 14 * 24 * 60 * 60,
       },
+      success_url: `${process.env.NEXT_PUBLIC_SUCCESS_URL}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_CANCEL_URL}`,
     })
-    logger.log("Stripe subscription created successfully:", subscription.id)
 
-    return NextResponse.json({ subscriptionId: subscription.id })
+    logger.log("Stripe checkout session created successfully:", session.id)
+
+    return NextResponse.json({
+      subscriptionId: session.id,
+      checkoutUrl: session.url,
+    })
   } catch (error) {
     logger.error("Detailed error in create-checkout-session:", error)
     return NextResponse.json(
