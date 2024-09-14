@@ -31,6 +31,9 @@ export async function POST(req: Request) {
     const session = event.data.object as Stripe.Checkout.Session
     logger.log("Checkout session completed:", session.id)
 
+    // Adicione log para verificar o conteúdo da sessão
+    logger.log("Session details:", JSON.stringify(session, null, 2))
+
     try {
       const customer = await stripe.customers.create({
         name: session.customer_details?.name || "Cliente Desconhecido",
