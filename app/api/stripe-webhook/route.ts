@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
 import Stripe from "stripe"
 import { logger } from "@/app/_lib/logger"
 import { createBarbershop } from "@/app/_actions/create-barbershop"
 import { db } from "@/app/_lib/prisma"
+import { getUserIdFromSession } from "@/app/_actions/getUserIdFromSession"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -44,10 +44,7 @@ export async function POST(req: Request) {
 
     try {
       const customerId = session.customer as string
-      const userSession = await getServerSession() // Obtendo a sessão do NextAuth
-      logger.log("User session:", userSession) // Log da sessão do usuário
-      const userId = userSession?.user?.id
-
+      const userId = await getUserIdFromSession(req)
       if (!userId) {
         logger.error("User ID is missing for creating BarbershopUser")
         return NextResponse.json(
