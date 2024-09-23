@@ -19,6 +19,7 @@ model User {
   barbershops   BarbershopUser[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+  stripeCustomerId  String?
 }
 
 model Account {

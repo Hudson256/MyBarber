@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { logger } from "@/app/_lib/logger"
+import { getUserIdFromSession } from "@/app/_actions/getUserIdFromSession"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -34,8 +35,17 @@ export async function POST(request: Request) {
       logger.log("Created new customer ID:", customerId)
     }
 
+    const userId = await getUserIdFromSession(request)
+    if (!userId) {
+      logger.error("User ID is missing")
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 },
+      )
+    }
+
     logger.log("Creating Stripe checkout session...")
-    const session = await stripe.checkout.sessions.create({
+    const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
@@ -49,13 +59,19 @@ export async function POST(request: Request) {
       },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/subscription-success`, // URL de sucesso
       cancel_url: process.env.NEXT_PUBLIC_CANCEL_URL,
+      metadata: {
+        userId: userId,
+      },
     })
 
-    logger.log("Stripe checkout session created successfully:", session.id)
+    logger.log(
+      "Stripe checkout session created successfully:",
+      stripeSession.id,
+    )
 
     return NextResponse.json({
-      subscriptionId: session.id,
-      checkoutUrl: session.url,
+      subscriptionId: stripeSession.id,
+      checkoutUrl: stripeSession.url,
     })
   } catch (error) {
     logger.error("Detailed error in create-checkout-session:", error)

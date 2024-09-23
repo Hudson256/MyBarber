@@ -3,7 +3,6 @@ import Stripe from "stripe"
 import { logger } from "@/app/_lib/logger"
 import { createBarbershop } from "@/app/_actions/create-barbershop"
 import { db } from "@/app/_lib/prisma"
-import { getUserIdFromSession } from "@/app/_actions/getUserIdFromSession"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -43,8 +42,7 @@ export async function POST(req: Request) {
     logger.log("Checkout session completed:", session.id)
 
     try {
-      const customerId = session.customer as string
-      const userId = await getUserIdFromSession(req)
+      const userId = session.metadata?.userId
       if (!userId) {
         logger.error("User ID is missing for creating BarbershopUser")
         return NextResponse.json(
@@ -59,7 +57,7 @@ export async function POST(req: Request) {
         description: "Descrição a ser definida",
         imageUrl: "https://example.com/default-image.jpg",
         phones: [],
-        stripeCustomerId: customerId,
+        stripeCustomerId: session.customer as string,
         stripeSubscriptionId: session.subscription as string,
         stripeSessionId: session.id,
       })
