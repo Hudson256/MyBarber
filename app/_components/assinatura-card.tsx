@@ -51,14 +51,6 @@ export default function AssinaturaCard() {
       }
 
       window.location.href = checkoutUrl
-
-      toast.success(
-        "Assinatura criada com sucesso! Você está em um período de teste gratuito de 14 dias.",
-      )
-    } catch (error) {
-      toast.error(
-        "Ocorreu um erro ao iniciar o processo de pagamento. Por favor, tente novamente.",
-      )
     } finally {
       setIsLoading(false)
     }

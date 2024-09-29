@@ -5,9 +5,10 @@ import { useEffect, useState, Suspense } from "react"
 import Header from "../_components/header"
 import { Button } from "../_components/ui/button"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface BarbershopInfo {
-  id: string
+  barbershopId: string
   name: string
   plan: string
 }
@@ -23,8 +24,9 @@ function SubscriptionSuccessContent() {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id")
+
     if (sessionId) {
-      fetch(`/api/get-session?session_id=${sessionId}`)
+      fetch(`/api/get-barbershop-id-by-session?session_id=${sessionId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("Falha ao obter informações da barbearia")
@@ -32,8 +34,15 @@ function SubscriptionSuccessContent() {
           return response.json()
         })
         .then((data) => {
-          setBarbershopInfo(data)
+          setBarbershopInfo({
+            barbershopId: data.barbershopId,
+            name: data.name,
+            plan: data.plan,
+          })
           setIsLoading(false)
+          toast.success(
+            "Assinatura concluída com sucesso! Aproveite seu teste de 14 dias grátis.",
+          )
         })
         .catch((error) => {
           console.error("Erro ao buscar informações da barbearia:", error)
@@ -70,7 +79,7 @@ function SubscriptionSuccessContent() {
             </p>
             <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
               ID da barbearia:{" "}
-              <span className="font-bold">{barbershopInfo.id}</span>
+              <span className="font-bold">{barbershopInfo.barbershopId}</span>
             </p>
             <p className="mb-4 text-center text-lg text-gray-600 dark:text-gray-300">
               Plano assinado:{" "}
@@ -93,7 +102,7 @@ function SubscriptionSuccessContent() {
           <Button
             onClick={() =>
               barbershopInfo &&
-              router.push(`/manage-barbershop/${barbershopInfo.id}`)
+              router.push(`/manage-barbershop/${barbershopInfo.barbershopId}`)
             }
             className="hover:bg-primary-dark bg-primary text-white"
           >

@@ -43,6 +43,12 @@ model Account {
   @@id([provider, providerAccountId])
 }
 
+model TempBarbershopId {
+  id            Int      @id @default(autoincrement())
+  sessionId     String   @unique
+  barbershopId  String
+}
+
 model Session {
   sessionToken String            @unique
   userId       String

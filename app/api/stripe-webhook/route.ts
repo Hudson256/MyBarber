@@ -61,8 +61,14 @@ export async function POST(req: Request) {
         stripeSubscriptionId: session.subscription as string,
         stripeSessionId: session.id,
       })
+      await db.tempBarbershopId.create({
+        data: {
+          sessionId: session.id,
+          barbershopId: newBarbershop.id,
+        },
+      })
 
-      logger.log("Barbershop created successfully:", newBarbershop.id)
+      logger.log("Created new barbershop ID:", newBarbershop.id)
 
       await db.barbershopUser.create({
         data: {
@@ -72,15 +78,17 @@ export async function POST(req: Request) {
       })
 
       logger.log("BarbershopUser created successfully")
-
-      await stripe.checkout.sessions.update(session.id, {
-        metadata: { barbershopId: newBarbershop.id },
-      })
-
-      logger.log("Stripe session updated with barbershop ID")
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/get-barbershop-id-by-session?session_id=${session.id}`,
+      )
+      const data = await response.json()
+      logger.log(
+        "Barbershop ID retrieved from new endpoint:",
+        data.barbershopId,
+      )
 
       return NextResponse.json({
-        received: true,
+        success: true,
         barbershopId: newBarbershop.id,
       })
     } catch (error) {
@@ -95,5 +103,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ received: true })
+  return NextResponse.json({ received: true }, { status: 200 })
 }

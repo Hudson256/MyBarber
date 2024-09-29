@@ -4,36 +4,36 @@ import { logger } from "@/app/_lib/logger"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const sessionId = searchParams.get("session_id")
+  const barbershopId = searchParams.get("id")
 
-  logger.log("Received request for session ID:", sessionId)
+  logger.log("Received request for barbershop ID:", barbershopId)
 
-  if (!sessionId || typeof sessionId !== "string") {
-    logger.error("Invalid or missing session ID")
+  if (!barbershopId || typeof barbershopId !== "string") {
+    logger.error("Invalid or missing barbershop ID")
     return NextResponse.json(
-      { error: "Session ID is required and must be a string" },
+      { error: "Barbershop ID is required and must be a string" },
       { status: 400 },
     )
   }
 
   try {
-    const barbershop = await db.barbershop.findFirst({
+    const barbershop = await db.barbershop.findUnique({
       where: {
-        stripeSessionId: sessionId,
+        id: barbershopId,
       },
     })
 
     logger.log("Database query result:", barbershop)
 
     if (!barbershop) {
-      logger.error(`Barbershop not found for session ID: ${sessionId}`)
+      logger.error(`Barbershop not found for ID: ${barbershopId}`)
       return NextResponse.json(
         { error: "Barbershop not found" },
         { status: 404 },
       )
     }
 
-    logger.log(`Barbershop found for session ID: ${sessionId}`)
+    logger.log(`Barbershop found for ID: ${barbershopId}`)
     return NextResponse.json({ barbershopId: barbershop.id })
   } catch (error) {
     logger.error("Error fetching barbershop:", error)

@@ -20,6 +20,15 @@ export async function POST(request: Request) {
       )
     }
 
+    const userId = await getUserIdFromSession(request)
+    if (!userId) {
+      logger.error("User ID is missing")
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 },
+      )
+    }
+
     let customerId: string
     const customers = await stripe.customers.list({ email: customerEmail })
 
@@ -35,15 +44,6 @@ export async function POST(request: Request) {
       logger.log("Created new customer ID:", customerId)
     }
 
-    const userId = await getUserIdFromSession(request)
-    if (!userId) {
-      logger.error("User ID is missing")
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 },
-      )
-    }
-
     logger.log("Creating Stripe checkout session...")
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
       ],
       mode: "subscription",
       subscription_data: {
-        trial_end: Math.floor(Date.now() / 1000) + 14 * 24 * 60 * 60,
+        trial_end: Math.floor(Date.now() / 1000) + 15 * 24 * 60 * 60,
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/subscription-success`, // URL de sucesso
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: process.env.NEXT_PUBLIC_CANCEL_URL,
       metadata: {
         userId: userId,
